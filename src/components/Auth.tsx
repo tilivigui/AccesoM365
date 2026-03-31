@@ -10,7 +10,10 @@ export const Auth: React.FC = () => {
         provider: 'azure',
         options: {
           scopes: 'User.Read User.Read.All Calendars.ReadWrite Place.Read.All',
-          redirectTo: window.location.origin
+          redirectTo: window.location.origin,
+          queryParams: {
+            prompt: 'select_account'
+          }
         },
       });
 
