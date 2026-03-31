@@ -5,7 +5,7 @@ import { RoomSelector } from './components/RoomSelector';
 import { CalendarView } from './components/CalendarView';
 import { BookingForm } from './components/BookingForm';
 import { ApproverDashboard } from './components/ApproverDashboard';
-import { LogOut, Calendar as CalendarIcon, ShieldCheck, LayoutGrid, Search, Bell, Settings, User, Clock } from 'lucide-react';
+import { LogOut, Calendar as CalendarIcon, ShieldCheck, LayoutGrid, Search, Bell, Settings, User, Clock, RefreshCw } from 'lucide-react';
 
 function App() {
   const [session, setSession] = useState<any>(null);
@@ -45,13 +45,27 @@ function App() {
     return () => subscription.unsubscribe();
   }, [session]);
 
-  // Effect to fetch notifications when role is determined or changes
+  // Effect to fetch notifications and setup Realtime subscription
   useEffect(() => {
     if (session?.user && (userRole === 'admin' || userRole === 'approver')) {
       fetchNotifications();
-      // Refetch every minute for real-time visibility for approvers
-      const interval = setInterval(fetchNotifications, 60000);
-      return () => clearInterval(interval);
+
+      // Realtime subscription for room_requests
+      const channel = supabase
+        .channel('room_requests_changes')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'room_requests' },
+          (payload) => {
+            console.log('App: Cambio detectado en room_requests (Realtime):', payload);
+            fetchNotifications();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [userRole, session]);
 
@@ -66,7 +80,8 @@ function App() {
     if (error) {
       console.error('App: Error al cargar notificaciones:', error);
     } else if (data) {
-      console.log(`App: Se encontraron ${data.length} notificaciones.`);
+      console.log(`App: Notificaciones pendientes encontradas: ${data.length}`);
+      if (data.length > 0) console.table(data.map(d => ({ title: d.title, status: d.status, id: d.id })));
       setNotifications(data);
     }
   };
@@ -209,7 +224,15 @@ function App() {
             {showNotifications && (
               <div className="absolute top-full right-0 mt-3 w-80 bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 overflow-hidden animate-in slide-in-from-top-2 duration-200 ring-1 ring-black/5">
                 <header className="px-5 py-4 border-b border-slate-50 bg-slate-50/30 flex items-center justify-between">
-                  <span className="text-[10px] font-black text-[#235b73] uppercase tracking-widest">Notificaciones</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-black text-[#235b73] uppercase tracking-widest">Notificaciones</span>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); fetchNotifications(); }}
+                      className="p-1 hover:bg-slate-200 rounded-md transition-colors text-slate-400"
+                    >
+                      <RefreshCw size={10} />
+                    </button>
+                  </div>
                   <span className="px-2 py-0.5 bg-[#00adef] text-white text-[8px] font-black rounded-full uppercase">{notifications.length} Pendientes</span>
                 </header>
                 <div className="max-h-96 overflow-y-auto custom-scrollbar">

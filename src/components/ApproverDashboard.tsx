@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { Check, X, User, ListTodo, Info, LayoutGrid, Clock, Hash, Zap } from 'lucide-react';
+import { Check, X, User, ListTodo, Info, LayoutGrid, Clock, Hash, Zap, RefreshCw } from 'lucide-react';
 
 export const ApproverDashboard: React.FC = () => {
   const [requests, setRequests] = useState<any[]>([]);
@@ -10,6 +10,23 @@ export const ApproverDashboard: React.FC = () => {
 
   useEffect(() => {
     fetchRequests();
+
+    // Setup Realtime for the dashboard
+    const channel = supabase
+      .channel('dashboard_changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'room_requests' },
+        () => {
+          console.log('Dashboard: Cambio detectado (Realtime)');
+          fetchRequests();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [filter]);
 
   const fetchRequests = async () => {
@@ -89,7 +106,16 @@ export const ApproverDashboard: React.FC = () => {
              </div>
              <span className="text-[9px] font-black text-[#00adef] uppercase tracking-[0.2em]">Centro de Gestión</span>
            </div>
-           <h2 className="text-3xl font-black text-[#235b73] tracking-tighter">Administración</h2>
+           <h2 className="text-3xl font-black text-[#235b73] tracking-tighter flex items-center gap-4">
+             Administración
+             <button
+               onClick={fetchRequests}
+               className="p-2 hover:bg-slate-100 rounded-xl transition-all text-slate-300 hover:text-[#00adef]"
+               title="Refrescar datos"
+             >
+               <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+             </button>
+           </h2>
            <p className="text-slate-400 font-semibold text-sm mt-1">Autorización y gobernanza de espacios.</p>
         </div>
 

@@ -88,7 +88,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ selectedId, onSelect
         );
       });
 
-      console.log(`Calendar: Eventos M365: ${formattedGraphEvents.length}, Eventos Supabase (filt): ${filteredSupabase.length}`);
+      console.log(`Calendar [SINCRO]: M365 (${formattedGraphEvents.length}), Supabase Pend/Aprob (${filteredSupabase.length})`);
+      if (filteredSupabase.length > 0) console.table(filteredSupabase.map(e => ({ title: e.title, source: e.extendedProps.source, status: e.extendedProps.status })));
+
       setEvents([...formattedGraphEvents, ...filteredSupabase]);
     } catch (err) {
       console.error('Error fetching calendar events:', err);
