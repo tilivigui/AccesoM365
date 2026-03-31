@@ -2,23 +2,22 @@
 
 @theme {
   --font-sans: 'Inter', 'Outfit', system-ui, -apple-system, sans-serif;
-  --color-brand-primary: #0078d4;
-  --color-brand-hover: #005a9e;
-  --color-surface-base: #f8fafc;
+  --color-livigui-primary: #235b73;
+  --color-livigui-accent: #00adef;
+  --color-livigui-dark: #000000;
+  --color-surface-base: #fcfdfe;
   --color-surface-card: #ffffff;
-  --color-text-main: #1e293b;
-  --color-text-sub: #64748b;
 }
 
 @layer base {
   :root {
     font-family: var(--font-sans);
     background-color: var(--color-surface-base);
-    color: var(--color-text-main);
+    color: var(--color-livigui-dark);
   }
 
   body {
-    @apply min-h-screen antialiased selection:bg-blue-100 selection:text-blue-900;
+    @apply min-h-screen antialiased selection:bg-cyan-100 selection:text-cyan-900;
     margin: 0;
     display: block;
     line-height: 1.6;
@@ -27,48 +26,51 @@
 
 @layer components {
   .card-premium {
-    @apply bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 rounded-xl overflow-hidden;
+    @apply bg-white border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl overflow-hidden;
   }
 
   .btn-primary {
-    @apply flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-blue-200/50 hover:shadow-lg;
+    @apply flex items-center justify-center gap-2 px-6 py-3 bg-[#235b73] hover:bg-[#1a4558] text-white font-bold rounded-xl transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-cyan-100;
+  }
+
+  .btn-accent {
+    @apply flex items-center justify-center gap-2 px-6 py-3 bg-[#00adef] hover:bg-[#009bd6] text-white font-bold rounded-xl transition-all active:scale-[0.98] disabled:opacity-50 shadow-sm;
   }
 
   .input-field {
-    @apply w-full px-4 py-2 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400;
+    @apply w-full px-4 py-2 bg-white border border-slate-200 rounded-xl focus:ring-4 focus:ring-cyan-500/10 focus:border-[#00adef] outline-none transition-all placeholder:text-slate-400 font-medium;
   }
 
   .nav-link {
-    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2;
+    @apply px-4 py-2.5 rounded-xl font-bold transition-all duration-200 flex items-center gap-3 text-sm;
   }
 
   .nav-link-active {
-    @apply bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-100;
+    @apply bg-cyan-50 text-[#235b73] shadow-sm ring-1 ring-cyan-100;
   }
 
   .nav-link-inactive {
-    @apply text-slate-600 hover:bg-slate-50 hover:text-slate-900;
+    @apply text-slate-500 hover:bg-slate-50 hover:text-[#235b73];
   }
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background-color: #f8fafc;
+  background-color: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #cbd5e1;
+  background-color: #e2e8f0;
   border-radius: 9999px;
-  border: 2px solid #f8fafc;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #94a3b8;
+  background-color: #cbd5e1;
 }
 
 /* FullCalendar Customizations */
@@ -78,49 +80,47 @@
 }
 
 .fc-toolbar-title {
-  font-size: 1.25rem !important;
-  font-weight: 700 !important;
-  color: #1e293b !important;
+  font-size: 1.1rem !important;
+  font-weight: 800 !important;
+  color: #235b73 !important;
+  text-transform: capitalize;
 }
 
 .fc-button {
   background-color: #ffffff !important;
-  border-color: #e2e8f0 !important;
-  color: #475569 !important;
-  font-weight: 600 !important;
-  text-transform: capitalize !important;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
-}
-
-.fc-button:hover {
-  background-color: #f8fafc !important;
-  border-color: #cbd5e1 !important;
+  border-color: #f1f5f9 !important;
+  color: #64748b !important;
+  font-weight: 700 !important;
+  font-size: 0.75rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 0.75rem !important;
 }
 
 .fc-button-active {
-  background-color: #2563eb !important;
-  border-color: #2563eb !important;
+  background-color: #235b73 !important;
+  border-color: #235b73 !important;
   color: #ffffff !important;
 }
 
 .fc-col-header-cell {
   background-color: #f8fafc !important;
   padding: 0.75rem 0 !important;
-  color: #64748b !important;
-  font-weight: 700 !important;
+  color: #235b73 !important;
+  font-weight: 800 !important;
   text-transform: uppercase !important;
-  font-size: 10px !important;
-  letter-spacing: 0.1em !important;
-  border-color: #e2e8f0 !important;
-}
-
-.fc-timegrid-slot {
+  font-size: 9px !important;
+  letter-spacing: 0.15em !important;
   border-color: #f1f5f9 !important;
 }
 
+.fc-timegrid-slot {
+  border-color: #f8fafc !important;
+}
+
 .fc-event {
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
-  border-radius: 0.375rem !important;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1) !important;
+  border-radius: 0.5rem !important;
   border: none !important;
-  padding: 0 0.25rem !important;
 }

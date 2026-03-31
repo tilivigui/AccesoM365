@@ -47,26 +47,26 @@ function App() {
   }
 
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden text-slate-900 font-sans">
+    <div className="flex h-screen bg-[#fcfdfe] overflow-hidden text-slate-900 font-sans">
       {/* Sidebar Navigation */}
-      <aside className="w-72 bg-white border-r border-slate-200 flex flex-col shrink-0">
-        <div className="p-8 mb-6">
+      <aside className="w-80 bg-white border-r border-slate-100 flex flex-col shrink-0">
+        <div className="p-10 mb-6">
           <div className="flex items-center gap-3">
-             <div className="p-2 bg-blue-600 rounded-lg shadow-lg shadow-blue-200">
-               <CalendarIcon className="text-white" size={20} strokeWidth={2.5} />
+             <div className="p-2.5 bg-[#235b73] rounded-xl shadow-lg shadow-[#235b73]/20">
+               <CalendarIcon className="text-[#00adef]" size={24} strokeWidth={2.5} />
              </div>
-             <span className="text-xl font-black tracking-tight">ROOMS<span className="text-blue-600">HUB</span></span>
+             <span className="text-2xl font-black tracking-tighter text-[#235b73]">LIVIGUI <span className="text-[#00adef] opacity-70">SALAS</span></span>
           </div>
         </div>
 
-        <nav className="flex-1 px-4 space-y-2 overflow-y-auto">
-          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 px-4">Workspace</div>
+        <nav className="flex-1 px-6 space-y-2.5 overflow-y-auto">
+          <div className="text-[10px] font-black text-slate-300 uppercase tracking-[0.25em] mb-6 px-4">Espacio de Trabajo</div>
           <button
             onClick={() => setView('user')}
             className={`w-full nav-link ${view === 'user' ? 'nav-link-active' : 'nav-link-inactive'}`}
           >
             <LayoutGrid size={20} />
-            <span>Dashboard</span>
+            <span>Panel de Reservas</span>
           </button>
 
           {(userRole === 'admin' || userRole === 'approver') && (
@@ -75,11 +75,11 @@ function App() {
               className={`w-full nav-link ${view === 'admin' ? 'nav-link-active' : 'nav-link-inactive'}`}
             >
               <ShieldCheck size={20} />
-              <span>Admin Center</span>
+              <span>Administración</span>
             </button>
           )}
 
-          <div className="pt-8 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 px-4">Selection</div>
+          <div className="pt-10 text-[10px] font-black text-slate-300 uppercase tracking-[0.25em] mb-6 px-4">Selección de Vista</div>
           <div className="px-2">
             <RoomSelector
               selectedId={selectedRoom?.id}
@@ -88,77 +88,80 @@ function App() {
           </div>
         </nav>
 
-        <div className="p-6 border-t border-slate-100 bg-slate-50/50">
-          <div className="flex items-center gap-3 mb-6 p-1">
-            <div className="w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center text-slate-500 font-black border border-slate-300">
+        <div className="p-8 border-t border-slate-50 bg-[#fcfdfe]/50">
+          <div className="flex items-center gap-4 mb-8 p-1">
+            <div className="w-12 h-12 rounded-2xl bg-cyan-50 flex items-center justify-center text-[#235b73] font-black border border-cyan-100 shadow-sm">
               {session.user.email?.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-bold truncate text-slate-800">{session.user.email}</p>
-              <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest opacity-80">{userRole}</p>
+              <p className="text-sm font-black truncate text-[#235b73]">{session.user.email}</p>
+              <p className="text-[10px] font-black text-[#00adef] uppercase tracking-[0.2em] opacity-80">{userRole}</p>
             </div>
           </div>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-slate-500 hover:text-red-600 hover:bg-red-50 font-bold text-sm rounded-xl transition-all"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 text-slate-400 hover:text-red-500 hover:bg-red-50 font-black text-xs uppercase tracking-widest rounded-2xl transition-all"
           >
             <LogOut size={16} />
-            Log Out
+            Cerrar Sesión
           </button>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0 bg-slate-50">
+      <main className="flex-1 flex flex-col min-w-0 bg-[#fcfdfe]">
         {/* Header Bar */}
-        <header className="h-20 bg-white border-b border-slate-200 px-8 flex items-center justify-between sticky top-0 z-20">
+        <header className="h-24 bg-white border-b border-slate-50 px-10 flex items-center justify-between sticky top-0 z-20">
           <div className="flex items-center gap-4">
-             <div className="relative w-72">
-                <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+             <div className="relative w-80">
+                <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
                 <input
                   type="text"
-                  placeholder="Universal search..."
-                  className="w-full pl-10 pr-4 py-2 bg-slate-100 border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm outline-none font-medium"
+                  placeholder="Búsqueda universal..."
+                  className="w-full pl-12 pr-4 py-3 bg-[#fcfdfe] border-transparent rounded-2xl focus:bg-white focus:ring-4 focus:ring-cyan-500/5 focus:border-[#00adef] transition-all text-sm outline-none font-bold placeholder:text-slate-300"
                 />
              </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button className="p-2.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all relative">
-              <Bell size={20} />
-              <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+          <div className="flex items-center gap-3">
+            <button className="p-3 text-slate-300 hover:text-[#00adef] hover:bg-cyan-50 rounded-2xl transition-all relative group">
+              <Bell size={22} />
+              <span className="absolute top-3.5 right-3.5 w-2 h-2 bg-[#00adef] rounded-full border-2 border-white ring-2 ring-cyan-50"></span>
             </button>
-            <button className="p-2.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all">
-              <Settings size={20} />
+            <button className="p-3 text-slate-300 hover:text-[#235b73] hover:bg-slate-50 rounded-2xl transition-all">
+              <Settings size={22} />
             </button>
           </div>
         </header>
 
         {/* Dynamic View Content */}
-        <div className="flex-1 p-8 overflow-y-auto">
+        <div className="flex-1 p-10 overflow-y-auto">
           {view === 'admin' ? (
-            <div className="max-w-5xl mx-auto pb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="max-w-6xl mx-auto pb-12 animate-in fade-in slide-in-from-bottom-6 duration-700">
               <ApproverDashboard />
             </div>
           ) : (
-            <div className="h-full flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="h-full flex flex-col animate-in fade-in slide-in-from-bottom-6 duration-700">
               {selectedRoom ? (
-                <div className="h-full flex flex-col gap-6">
+                <div className="h-full flex flex-col gap-8">
                   <header className="flex items-center justify-between">
                     <div>
-                      <h2 className="text-3xl font-black text-slate-900 tracking-tight">{selectedRoom.displayName}</h2>
-                      <p className="text-slate-500 font-medium flex items-center gap-2 mt-1">
-                        <User size={14} className="text-blue-500" />
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-[10px] font-black text-[#00adef] uppercase tracking-[0.3em]">Vista del Calendario</span>
+                      </div>
+                      <h2 className="text-4xl font-black text-[#235b73] tracking-tighter">{selectedRoom.displayName}</h2>
+                      <p className="text-slate-400 font-bold flex items-center gap-2 mt-2">
+                        <User size={16} className="text-[#00adef]" />
                         {selectedRoom.mail}
                       </p>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-black uppercase rounded-full ring-1 ring-green-200">Active</span>
-                      <span className="text-slate-300 text-sm font-bold">GMT+00:00</span>
+                      <span className="px-4 py-1.5 bg-cyan-50 text-[#00adef] text-[10px] font-black uppercase tracking-widest rounded-full ring-2 ring-cyan-100 shadow-sm">Activa</span>
+                      <span className="text-slate-200 text-sm font-black">GMT-05:00</span>
                     </div>
                   </header>
 
-                  <div className="flex-1 card-premium p-6">
+                  <div className="flex-1 card-premium p-1 bg-white">
                     <CalendarView
                       selectedId={selectedRoom.id}
                       onSelectTime={(start, end) => setBookingTime({ start, end })}
@@ -166,13 +169,13 @@ function App() {
                   </div>
                 </div>
               ) : (
-                <div className="flex-1 flex flex-col items-center justify-center text-center max-w-lg mx-auto">
-                  <div className="w-24 h-24 bg-blue-50 rounded-[2.5rem] flex items-center justify-center text-blue-600 mb-8 border-2 border-blue-100 animate-pulse">
-                    <CalendarIcon size={40} strokeWidth={2.5} />
+                <div className="flex-1 flex flex-col items-center justify-center text-center max-w-xl mx-auto py-20">
+                  <div className="w-32 h-32 bg-cyan-50 rounded-[3rem] flex items-center justify-center text-[#00adef] mb-10 border-2 border-cyan-100 animate-pulse shadow-xl shadow-cyan-100/20">
+                    <CalendarIcon size={56} strokeWidth={2.5} />
                   </div>
-                  <h3 className="text-3xl font-black text-slate-900 mb-4 tracking-tight">Select a workspace</h3>
-                  <p className="text-slate-500 text-lg font-medium leading-relaxed">
-                    Choose a meeting room or user calendar from the sidebar to view availability and start scheduling your next meeting.
+                  <h3 className="text-4xl font-black text-[#235b73] mb-6 tracking-tighter">Seleccione una Sala</h3>
+                  <p className="text-slate-400 text-xl font-bold leading-relaxed">
+                    Elija una sala de reuniones o el calendario de un usuario desde el panel lateral para visualizar la disponibilidad y programar su próxima reunión.
                   </p>
                 </div>
               )}

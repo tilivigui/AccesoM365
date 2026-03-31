@@ -65,41 +65,41 @@ export const RoomSelector: React.FC<RoomSelectorProps> = ({ onSelect, selectedId
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200 shadow-inner">
+    <div className="space-y-6">
+      <div className="flex bg-slate-50 p-1.5 rounded-2xl border border-slate-100 ring-1 ring-slate-50 shadow-inner">
         <button
           onClick={() => setViewType('rooms')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition-all ${
-            viewType === 'rooms' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-[10px] font-black uppercase tracking-[0.15em] rounded-xl transition-all ${
+            viewType === 'rooms' ? 'bg-[#235b73] text-white shadow-xl shadow-[#235b73]/20' : 'text-slate-400 hover:text-[#235b73]'
           }`}
         >
-          <Building2 size={14} /> Rooms
+          <Building2 size={14} /> Salas
         </button>
         <button
           onClick={() => setViewType('users')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition-all ${
-            viewType === 'users' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-[10px] font-black uppercase tracking-[0.15em] rounded-xl transition-all ${
+            viewType === 'users' ? 'bg-[#235b73] text-white shadow-xl shadow-[#235b73]/20' : 'text-slate-400 hover:text-[#235b73]'
           }`}
         >
-          <User size={14} /> Users
+          <User size={14} /> Usuarios
         </button>
       </div>
 
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
         <input
           type="text"
           value={query}
           onChange={handleSearch}
-          placeholder={viewType === 'rooms' ? 'Quick search...' : 'Search by name...'}
-          className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-xs font-semibold placeholder:text-slate-400 transition-all"
+          placeholder={viewType === 'rooms' ? 'Buscar salas...' : 'Nombre de usuario...'}
+          className="w-full pl-10 pr-4 py-3 bg-white border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#00adef]/10 focus:border-[#00adef] outline-none text-xs font-bold placeholder:text-slate-300 transition-all shadow-sm"
         />
       </div>
 
-      <div className="max-h-[320px] overflow-y-auto space-y-1.5 custom-scrollbar pr-1">
+      <div className="max-h-[360px] overflow-y-auto space-y-2 pr-1 custom-scrollbar">
         {loading && (
-          <div className="flex flex-col items-center justify-center py-8 opacity-40">
-             <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <div className="flex flex-col items-center justify-center py-12 opacity-30">
+             <div className="w-6 h-6 border-2 border-[#235b73] border-t-transparent rounded-full animate-spin"></div>
           </div>
         )}
 
@@ -107,35 +107,35 @@ export const RoomSelector: React.FC<RoomSelectorProps> = ({ onSelect, selectedId
           <button
             key={item.id}
             onClick={() => onSelect(item)}
-            className={`w-full text-left p-3 rounded-xl transition-all group flex items-center gap-3 border ${
+            className={`w-full text-left p-4 rounded-2xl transition-all group flex items-center gap-4 border shadow-sm ${
               selectedId === item.id
-              ? 'bg-blue-600 border-blue-500 shadow-lg shadow-blue-200'
-              : 'bg-white border-slate-100 hover:border-slate-200 hover:bg-slate-50'
+              ? 'bg-[#00adef] border-[#009bd6] shadow-xl shadow-[#00adef]/20 ring-4 ring-[#00adef]/10 scale-[1.02]'
+              : 'bg-white border-slate-50 hover:border-cyan-100 hover:bg-cyan-50/20'
             }`}
           >
-            <div className={`p-2 rounded-lg transition-all ${
-              selectedId === item.id ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-400 group-hover:text-blue-600 group-hover:bg-blue-50'
+            <div className={`p-2.5 rounded-xl transition-all ${
+              selectedId === item.id ? 'bg-white/20 text-white' : 'bg-slate-50 text-slate-300 group-hover:text-[#235b73] group-hover:bg-white shadow-inner'
             }`}>
-              {item.type === 'room' ? <Building2 size={16} /> : <User size={16} />}
+              {item.type === 'room' ? <Building2 size={18} /> : <User size={18} />}
             </div>
             <div className="flex-1 overflow-hidden">
-              <p className={`text-xs font-black truncate ${selectedId === item.id ? 'text-white' : 'text-slate-700'}`}>
+              <p className={`text-xs font-black truncate tracking-tight ${selectedId === item.id ? 'text-white' : 'text-slate-800'}`}>
                 {item.displayName}
               </p>
               {item.mail && (
-                <p className={`text-[10px] font-medium truncate ${selectedId === item.id ? 'text-blue-100' : 'text-slate-400'}`}>
+                <p className={`text-[10px] font-bold truncate opacity-60 ${selectedId === item.id ? 'text-white' : 'text-slate-400'}`}>
                   {item.mail}
                 </p>
               )}
             </div>
-            {selectedId === item.id && <CheckCircle2 size={14} className="text-white shrink-0" />}
+            {selectedId === item.id && <CheckCircle2 size={16} className="text-white shrink-0" />}
           </button>
         ))}
 
         {!loading && results.length === 0 && (
-          <div className="text-center py-10 opacity-30">
-            <Search size={24} className="mx-auto mb-2" />
-            <p className="text-[10px] font-black uppercase tracking-widest">No entries found</p>
+          <div className="text-center py-16 opacity-10">
+            <Search size={32} className="mx-auto mb-4" />
+            <p className="text-[10px] font-black uppercase tracking-[0.3em]">Sin resultados</p>
           </div>
         )}
       </div>
