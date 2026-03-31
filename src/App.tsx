@@ -24,7 +24,7 @@ function App() {
       setSession(session);
       setHasProviderToken(!!session?.provider_token);
       if (session?.user) {
-        fetchUserRole(session.user.id);
+        fetchUserRole(session.user.id, session.user.email);
       }
       setLoading(false);
     });
@@ -34,7 +34,7 @@ function App() {
       setSession(session);
       setHasProviderToken(!!session?.provider_token);
       if (session?.user) {
-        fetchUserRole(session.user.id);
+        fetchUserRole(session.user.id, session.user.email);
       }
       setLoading(false);
     });
@@ -42,7 +42,7 @@ function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const fetchUserRole = async (userId: string) => {
+  const fetchUserRole = async (userId: string, email?: string) => {
     const { data, error } = await supabase
       .from('profiles')
       .select('role')
@@ -51,6 +51,10 @@ function App() {
 
     if (!error && data) {
       setUserRole(data.role);
+      // Automatically switch to admin view if the logged-in user is the TI supervisor
+      if (email === 'supervisorti@livigui.com' && data.role === 'approver') {
+        setView('admin');
+      }
     }
   };
 

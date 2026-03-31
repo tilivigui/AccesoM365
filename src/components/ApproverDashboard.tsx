@@ -5,22 +5,28 @@ import { Check, X, User, ListTodo, Info, LayoutGrid, Clock, Hash, Zap } from 'lu
 export const ApproverDashboard: React.FC = () => {
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<'all' | 'pending'>('pending');
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
 
   useEffect(() => {
     fetchRequests();
-  }, []);
+  }, [filter]);
 
   const fetchRequests = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('room_requests')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*');
+
+      if (filter === 'pending') {
+        query = query.eq('status', 'pending');
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) throw error;
-      setRequests(data);
+      setRequests(data || []);
     } catch (err) {
       console.error('Error fetching requests:', err);
     } finally {
@@ -88,9 +94,18 @@ export const ApproverDashboard: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-1.5 bg-slate-50 p-1.5 rounded-xl border border-slate-100/50 w-fit shrink-0">
-           <button className="px-4 py-2 bg-white text-[#235b73] text-[9px] font-black uppercase tracking-widest rounded-lg shadow-sm border border-slate-100 transition-all">Todas</button>
-           <button className="px-4 py-2 text-slate-400 text-[9px] font-black uppercase tracking-widest rounded-lg hover:text-[#00adef] transition-all">Pendientes</button>
-           <button className="px-4 py-2 text-slate-400 text-[9px] font-black uppercase tracking-widest rounded-lg hover:text-[#00adef] transition-all">Archivo</button>
+           <button
+             onClick={() => setFilter('all')}
+             className={`px-4 py-2 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all ${filter === 'all' ? 'bg-white text-[#235b73] shadow-sm border border-slate-100' : 'text-slate-400 hover:text-[#00adef]'}`}
+           >
+             Todas
+           </button>
+           <button
+             onClick={() => setFilter('pending')}
+             className={`px-4 py-2 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all ${filter === 'pending' ? 'bg-white text-[#235b73] shadow-sm border border-slate-100' : 'text-slate-400 hover:text-[#00adef]'}`}
+           >
+             Pendientes
+           </button>
         </div>
       </header>
 

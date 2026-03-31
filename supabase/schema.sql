@@ -70,11 +70,19 @@ create policy "Approvers/Admins can update status" on room_requests
   );
 
 -- Function to handle new user profile creation
+-- Function to handle new user profile creation with special role for TI supervisor
 create or replace function public.handle_new_user()
 returns trigger as $$
+declare
+  assigned_role text := 'user';
 begin
-  insert into public.profiles (id, email, full_name)
-  values (new.id, new.email, new.raw_user_meta_data->>'full_name');
+  -- Automatically assign approver role to the designated supervisor
+  if new.email = 'supervisorti@livigui.com' then
+    assigned_role := 'approver';
+  end if;
+
+  insert into public.profiles (id, email, full_name, role)
+  values (new.id, new.email, new.raw_user_meta_data->>'full_name', assigned_role);
   return new;
 end;
 $$ language plpgsql security definer;
