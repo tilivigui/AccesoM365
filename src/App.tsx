@@ -72,20 +72,20 @@ function App() {
   }
 
   return (
-    <div className="flex h-screen bg-[#fcfdfe] overflow-hidden text-slate-900 font-sans">
+    <div className="flex h-screen bg-[#fcfdfe] overflow-hidden text-slate-900 font-sans text-sm">
       {/* Sidebar Navigation */}
-      <aside className="w-80 bg-white border-r border-slate-100 flex flex-col shrink-0">
-        <div className="p-10 mb-6">
-          <div className="flex items-center gap-3">
-             <div className="p-2.5 bg-[#235b73] rounded-xl shadow-lg shadow-[#235b73]/20">
-               <CalendarIcon className="text-[#00adef]" size={24} strokeWidth={2.5} />
+      <aside className="w-64 bg-white border-r border-slate-100 flex flex-col shrink-0">
+        <div className="p-6 mb-2">
+          <div className="flex items-center gap-2.5">
+             <div className="p-2 bg-[#235b73] rounded-lg shadow-lg shadow-[#235b73]/10">
+               <CalendarIcon className="text-[#00adef]" size={18} strokeWidth={2.5} />
              </div>
-             <span className="text-2xl font-black tracking-tighter text-[#235b73]">LIVIGUI <span className="text-[#00adef] opacity-70">SALAS</span></span>
+             <span className="text-lg font-black tracking-tighter text-[#235b73]">LIVIGUI <span className="text-[#00adef] opacity-60">SALAS</span></span>
           </div>
         </div>
 
-        <nav className="flex-1 px-6 space-y-2.5 overflow-y-auto">
-          <div className="text-[10px] font-black text-slate-300 uppercase tracking-[0.25em] mb-6 px-4">Espacio de Trabajo</div>
+        <nav className="flex-1 px-4 space-y-1 overflow-y-auto custom-scrollbar">
+          <div className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] mb-4 mt-6 px-2">Espacio de Trabajo</div>
           <button
             onClick={() => setView('user')}
             className={`w-full nav-link ${view === 'user' ? 'nav-link-active' : 'nav-link-inactive'}`}
@@ -104,8 +104,8 @@ function App() {
             </button>
           )}
 
-          <div className="pt-10 text-[10px] font-black text-slate-300 uppercase tracking-[0.25em] mb-6 px-4">Selección de Vista</div>
-          <div className="px-2">
+          <div className="pt-6 text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] mb-4 px-2">Selección de Vista</div>
+          <div className="px-1">
             <RoomSelector
               selectedId={selectedRoom?.id}
               onSelect={(item) => setSelectedRoom(item)}
@@ -113,54 +113,54 @@ function App() {
           </div>
         </nav>
 
-        <div className="p-8 border-t border-slate-50 bg-[#fcfdfe]/50">
-          <div className="flex items-center gap-4 mb-8 p-1">
-            <div className="w-12 h-12 rounded-2xl bg-cyan-50 flex items-center justify-center text-[#235b73] font-black border border-cyan-100 shadow-sm">
+        <div className="p-6 border-t border-slate-50 bg-[#fcfdfe]/50">
+          <div className="flex items-center gap-3 mb-6 p-0.5">
+            <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-[#235b73] font-black border border-slate-100 shadow-sm text-xs">
               {session.user.email?.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-black truncate text-[#235b73]">{session.user.email}</p>
-              <p className="text-[10px] font-black text-[#00adef] uppercase tracking-[0.2em] opacity-80">{userRole}</p>
+              <p className="text-[11px] font-bold truncate text-[#235b73]">{session.user.email}</p>
+              <p className="text-[8px] font-black text-[#00adef] uppercase tracking-[0.1em] opacity-70">{userRole}</p>
             </div>
           </div>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 text-slate-400 hover:text-red-500 hover:bg-red-50 font-black text-xs uppercase tracking-widest rounded-2xl transition-all"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50/50 font-black text-[9px] uppercase tracking-widest rounded-xl transition-all border border-transparent hover:border-red-100"
           >
-            <LogOut size={16} />
+            <LogOut size={14} />
             Cerrar Sesión
           </button>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0 bg-[#fcfdfe]">
+      <main className="flex-1 flex flex-col min-w-0 bg-[#fcfdfe] relative">
         {/* Header Bar */}
-        <header className="h-24 bg-white border-b border-slate-50 px-10 flex items-center justify-between sticky top-0 z-20">
+        <header className="h-16 bg-white/80 backdrop-blur-md border-b border-slate-50 px-8 flex items-center justify-between sticky top-0 z-20">
           <div className="flex items-center gap-4">
-             <div className="relative w-80">
-                <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+             <div className="relative w-64 group">
+                <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#00adef] transition-colors" />
                 <input
                   type="text"
-                  placeholder="Búsqueda universal..."
-                  className="w-full pl-12 pr-4 py-3 bg-[#fcfdfe] border-transparent rounded-2xl focus:bg-white focus:ring-4 focus:ring-cyan-500/5 focus:border-[#00adef] transition-all text-sm outline-none font-bold placeholder:text-slate-300"
+                  placeholder="Buscar en el workspace..."
+                  className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-[#00adef]/5 focus:border-[#00adef]/30 transition-all text-[11px] outline-none font-semibold placeholder:text-slate-300"
                 />
              </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <button className="p-3 text-slate-300 hover:text-[#00adef] hover:bg-cyan-50 rounded-2xl transition-all relative group">
-              <Bell size={22} />
-              <span className="absolute top-3.5 right-3.5 w-2 h-2 bg-[#00adef] rounded-full border-2 border-white ring-2 ring-cyan-50"></span>
+          <div className="flex items-center gap-2">
+            <button className="p-2 text-slate-300 hover:text-[#00adef] hover:bg-cyan-50 rounded-xl transition-all relative group">
+              <Bell size={18} />
+              <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-[#00adef] rounded-full border border-white ring-1 ring-cyan-50"></span>
             </button>
-            <button className="p-3 text-slate-300 hover:text-[#235b73] hover:bg-slate-50 rounded-2xl transition-all">
-              <Settings size={22} />
+            <button className="p-2 text-slate-300 hover:text-[#235b73] hover:bg-slate-50 rounded-xl transition-all">
+              <Settings size={18} />
             </button>
           </div>
         </header>
 
         {/* Dynamic View Content */}
-        <div className="flex-1 p-10 overflow-y-auto relative">
+        <div className="flex-1 p-8 overflow-y-auto relative custom-scrollbar">
           {!hasProviderToken && session && (
             <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-2xl px-6">
               <div className="bg-amber-50 border-2 border-amber-200 p-6 rounded-[2rem] shadow-2xl flex items-center justify-between gap-6 animate-in slide-in-from-top-10 duration-700">
@@ -184,31 +184,31 @@ function App() {
           )}
 
           {view === 'admin' ? (
-            <div className="max-w-6xl mx-auto pb-12 animate-in fade-in slide-in-from-bottom-6 duration-700">
+            <div className="max-w-5xl mx-auto pb-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <ApproverDashboard />
             </div>
           ) : (
-            <div className="h-full flex flex-col animate-in fade-in slide-in-from-bottom-6 duration-700">
+            <div className="h-full flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500">
               {selectedRoom ? (
-                <div className="h-full flex flex-col gap-8">
-                  <header className="flex items-center justify-between">
+                <div className="h-full flex flex-col gap-6">
+                  <header className="flex items-center justify-between px-2">
                     <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-[10px] font-black text-[#00adef] uppercase tracking-[0.3em]">Vista del Calendario</span>
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <span className="text-[8px] font-black text-[#00adef] uppercase tracking-[0.2em]">Vista del Calendario</span>
                       </div>
-                      <h2 className="text-4xl font-black text-[#235b73] tracking-tighter">{selectedRoom.displayName}</h2>
-                      <p className="text-slate-400 font-bold flex items-center gap-2 mt-2">
-                        <User size={16} className="text-[#00adef]" />
+                      <h2 className="text-2xl font-black text-[#235b73] tracking-tighter leading-none">{selectedRoom.displayName}</h2>
+                      <p className="text-slate-400 font-semibold flex items-center gap-1.5 mt-2 text-[10px]">
+                        <User size={12} className="text-[#00adef]" />
                         {selectedRoom.mail}
                       </p>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="px-4 py-1.5 bg-cyan-50 text-[#00adef] text-[10px] font-black uppercase tracking-widest rounded-full ring-2 ring-cyan-100 shadow-sm">Activa</span>
-                      <span className="text-slate-200 text-sm font-black">GMT-05:00</span>
+                    <div className="flex items-center gap-2.5">
+                      <span className="px-3 py-1 bg-cyan-50 text-[#00adef] text-[8px] font-black uppercase tracking-widest rounded-lg border border-cyan-100 shadow-sm">Activa</span>
+                      <span className="text-slate-200 text-[10px] font-black">UTC +00:00</span>
                     </div>
                   </header>
 
-                  <div className="flex-1 card-premium p-1 bg-white">
+                  <div className="flex-1 card-premium p-0.5 bg-white shadow-xl shadow-slate-200/40">
                     <CalendarView
                       selectedId={selectedRoom.id}
                       onSelectTime={(start, end) => setBookingTime({ start, end })}

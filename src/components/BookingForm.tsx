@@ -36,7 +36,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({ startTime, endTime, ro
     content: '<p>Objetivos y agenda de la reunión...</p>',
     editorProps: {
       attributes: {
-        class: 'prose prose-slate prose-sm focus:outline-none min-h-[140px] p-6 bg-slate-50/50 rounded-[2rem] border border-slate-100 hover:border-cyan-200 transition-all focus:ring-4 focus:ring-cyan-500/5 focus:border-[#00adef] font-medium text-slate-700',
+        class: 'prose prose-slate prose-sm focus:outline-none min-h-[100px] p-4 bg-slate-50/50 rounded-xl border border-slate-100 hover:border-[#00adef]/30 transition-all focus:ring-2 focus:ring-[#00adef]/5 focus:border-[#00adef] font-medium text-slate-700 text-xs',
       },
     },
   });
@@ -111,153 +111,152 @@ export const BookingForm: React.FC<BookingFormProps> = ({ startTime, endTime, ro
   };
 
   return (
-    <div className="fixed inset-0 bg-[#235b73]/60 backdrop-blur-md flex items-center justify-center p-6 z-50 overflow-y-auto animate-in fade-in duration-500">
-      <div className="bg-white rounded-[3rem] shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto overflow-x-hidden p-0 relative border border-white/20 animate-in zoom-in-95 duration-500 ring-1 ring-black/5">
-        <button
-          onClick={onClose}
-          className="absolute top-8 right-8 text-slate-300 hover:text-[#235b73] hover:bg-slate-50 p-3 rounded-2xl transition-all shadow-sm"
-        >
-          <X size={24} />
-        </button>
-
-        <div className="p-12 md:p-16">
-          <header className="mb-12">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="px-4 py-1.5 bg-cyan-50 text-[#00adef] text-[10px] font-black uppercase tracking-[0.2em] rounded-full ring-2 ring-cyan-100 shadow-sm">Configuración de Reunión</div>
+    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto animate-in fade-in duration-300">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[92vh] overflow-y-auto p-0 relative border border-slate-200 animate-in zoom-in-95 duration-300 flex flex-col custom-scrollbar">
+        <header className="px-8 py-6 border-b border-slate-50 flex items-center justify-between bg-white sticky top-0 z-10">
+          <div>
+            <div className="flex items-center gap-1.5 mb-1">
+              <span className="text-[9px] font-black text-[#00adef] uppercase tracking-[0.15em]">Configuración de Reserva</span>
             </div>
-            <h2 className="text-5xl font-black text-[#235b73] tracking-tighter mb-4">
-              Reservar Sala
-            </h2>
-            <div className="flex items-center gap-3 text-slate-400 font-black uppercase text-xs tracking-widest bg-slate-50 w-fit px-5 py-2.5 rounded-2xl border border-slate-100">
-               <Hash size={16} className="text-[#00adef]" />
-               {room.displayName}
-            </div>
-          </header>
+            <h2 className="text-xl font-black text-[#235b73] tracking-tighter">Nueva Reunión</h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-slate-300 hover:text-[#235b73] hover:bg-slate-50 p-2 rounded-lg transition-all"
+          >
+            <X size={18} />
+          </button>
+        </header>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
-            {/* Times */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-               <div className="bg-[#fcfdfe] p-6 rounded-[2rem] border border-cyan-50 ring-4 ring-cyan-50/5 shadow-sm">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em] mb-3 flex items-center gap-2"><Clock size={14} className="text-[#00adef]" /> Hora de Inicio</p>
-                  <p className="text-2xl font-black text-[#235b73]">{startTime?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}</p>
-                  <p className="text-xs font-bold text-slate-300 uppercase tracking-widest mt-1.5">{startTime?.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}</p>
-               </div>
-               <div className="bg-[#fcfdfe] p-6 rounded-[2rem] border border-cyan-50 ring-4 ring-cyan-50/5 shadow-sm">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em] mb-3 flex items-center gap-2"><Clock size={14} className="text-[#00adef]" /> Hora de Finalización</p>
-                  <p className="text-2xl font-black text-[#235b73]">{endTime?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}</p>
-                  <p className="text-xs font-bold text-slate-300 uppercase tracking-widest mt-1.5">{endTime?.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}</p>
-               </div>
-            </div>
+        <form onSubmit={handleSubmit(onSubmit)} className="p-8 space-y-8 flex-1">
+          {/* Room Context */}
+          <div className="flex items-center gap-2 text-slate-400 font-bold uppercase text-[10px] tracking-wider bg-slate-50 px-4 py-2.5 rounded-xl border border-slate-100/50 w-fit">
+              <Hash size={12} className="text-[#00adef]" />
+              SALA: {room.displayName}
+          </div>
 
-            {/* Title */}
-            <div>
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.25em] mb-4 px-4">Asunto de la Reunión</label>
+          {/* Times */}
+          <div className="grid grid-cols-2 gap-4">
+              <div className="bg-slate-50/50 p-4 rounded-xl border border-slate-100 flex items-center gap-4">
+                <div className="p-2 bg-white rounded-lg shadow-sm text-[#00adef]"><Clock size={16} /></div>
+                <div>
+                  <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest">Inicio</p>
+                  <p className="text-sm font-black text-[#235b73]">{startTime?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}</p>
+                </div>
+              </div>
+              <div className="bg-slate-50/50 p-4 rounded-xl border border-slate-100 flex items-center gap-4">
+                <div className="p-2 bg-white rounded-lg shadow-sm text-[#00adef]"><Clock size={16} /></div>
+                <div>
+                  <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest">Fin</p>
+                  <p className="text-sm font-black text-[#235b73]">{endTime?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}</p>
+                </div>
+              </div>
+          </div>
+
+          {/* Title */}
+          <div>
+            <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Asunto</label>
+            <input
+              {...register('title', { required: true })}
+              className="input-field py-3.5 text-sm font-bold"
+              placeholder="Ej. Revisión Semanal de Proyecto"
+            />
+          </div>
+
+          {/* Participants */}
+          <div>
+            <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Participantes</label>
+            <div className="relative mb-3">
+              <Users className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
               <input
-                {...register('title', { required: true })}
-                className="input-field py-5 text-xl font-black px-8 rounded-[2rem]"
-                placeholder="Ej. Revisión Semanal de Proyecto"
+                type="text"
+                value={participantSearch}
+                onChange={handleSearchParticipants}
+                className="input-field pl-10 py-3 text-xs"
+                placeholder="Buscar por nombre o correo..."
               />
+              {participantResults.length > 0 && (
+                <div className="absolute top-full left-0 right-0 bg-white border border-slate-100 mt-2 rounded-xl shadow-xl z-50 overflow-hidden animate-in slide-in-from-top-2 duration-200">
+                  {participantResults.map(p => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => addParticipant(p)}
+                      className="w-full text-left p-3.5 hover:bg-slate-50 flex items-center justify-between group transition-colors border-b border-slate-50 last:border-0"
+                    >
+                      <div>
+                        <span className="block font-bold text-[#235b73] text-xs">{p.displayName}</span>
+                        <span className="block text-[9px] text-slate-300 mt-0.5">{p.mail}</span>
+                      </div>
+                      <CheckCircle2 size={14} className="text-slate-100 group-hover:text-[#00adef]" />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
+            <div className="flex flex-wrap gap-2">
+              {selectedParticipants.map(p => (
+                <span key={p.id} className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#235b73] text-white text-[10px] font-bold rounded-lg shadow-sm">
+                  {p.displayName}
+                  <button type="button" onClick={() => removeParticipant(p.id)} className="text-white/40 hover:text-white transition-colors"><X size={12} /></button>
+                </span>
+              ))}
+            </div>
+          </div>
 
-            {/* Participants */}
-            <div>
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.25em] mb-4 px-4">Asistentes Requeridos</label>
-              <div className="relative mb-4">
-                <Users className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={20} />
-                <input
-                  type="text"
-                  value={participantSearch}
-                  onChange={handleSearchParticipants}
-                  className="input-field pl-16 py-5 font-bold px-8 rounded-[2rem]"
-                  placeholder="Buscar por nombre o correo..."
-                />
-                {participantResults.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 bg-white border border-slate-100 mt-3 rounded-[2.5rem] shadow-2xl z-50 overflow-hidden ring-4 ring-cyan-50/50 animate-in slide-in-from-top-4 duration-300">
-                    {participantResults.map(p => (
-                      <button
-                        key={p.id}
-                        type="button"
-                        onClick={() => addParticipant(p)}
-                        className="w-full text-left p-6 hover:bg-cyan-50 flex items-center justify-between group transition-colors border-b border-slate-50 last:border-0"
-                      >
-                        <div>
-                          <span className="block font-black text-[#235b73] group-hover:text-[#00adef] text-base">{p.displayName}</span>
-                          <span className="block text-[10px] font-bold text-slate-300 uppercase tracking-widest mt-1">{p.mail}</span>
-                        </div>
-                        <CheckCircle2 size={20} className="text-slate-100 group-hover:text-[#00adef] transition-all" />
-                      </button>
-                    ))}
+          {/* Description */}
+          <div>
+            <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Agenda</label>
+            <EditorContent editor={editor} />
+          </div>
+
+          {/* Resources */}
+          <div>
+            <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Equipamiento</label>
+            <div className="grid grid-cols-3 gap-2">
+              {RECURSOS.map(res => (
+                <button
+                  key={res.id}
+                  type="button"
+                  onClick={() => toggleResource(res.id)}
+                  className={`flex items-center gap-2.5 p-3 border rounded-xl transition-all text-left ${
+                    selectedResources.includes(res.id)
+                      ? 'bg-[#235b73] border-[#235b73] text-white shadow-lg shadow-[#235b73]/10'
+                      : 'bg-white border-slate-100 hover:border-slate-200 text-slate-500'
+                  }`}
+                >
+                  <div className={`${selectedResources.includes(res.id) ? 'text-[#00adef]' : 'text-slate-300'}`}>
+                    {React.cloneElement(res.icon as React.ReactElement, { size: 14 })}
                   </div>
-                )}
-              </div>
-              <div className="flex flex-wrap gap-2.5 px-2">
-                {selectedParticipants.map(p => (
-                  <span key={p.id} className="inline-flex items-center gap-3 px-5 py-2.5 bg-[#235b73] text-white text-xs font-black uppercase tracking-tight rounded-2xl shadow-xl shadow-[#235b73]/20 hover:scale-105 transition-all">
-                    <User size={14} className="text-[#00adef]" />
-                    {p.displayName}
-                    <button type="button" onClick={() => removeParticipant(p.id)} className="text-white/40 hover:text-white transition-colors ml-1"><X size={16} /></button>
-                  </span>
-                ))}
-              </div>
+                  <span className="text-[9px] font-bold uppercase tracking-tighter">{res.label}</span>
+                </button>
+              ))}
             </div>
+          </div>
 
-            {/* Description */}
-            <div>
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.25em] mb-4 px-4">Agenda / Detalles Adicionales</label>
-              <EditorContent editor={editor} />
-            </div>
-
-            {/* Resources */}
-            <div>
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.25em] mb-4 px-4">Recursos Adicionales</label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {RECURSOS.map(res => (
-                  <button
-                    key={res.id}
-                    type="button"
-                    onClick={() => toggleResource(res.id)}
-                    className={`flex flex-col items-start gap-4 p-6 border-2 rounded-[2.5rem] transition-all ${
-                      selectedResources.includes(res.id)
-                        ? 'bg-[#00adef] border-[#009bd6] text-white shadow-xl shadow-[#00adef]/20 scale-[1.03] ring-8 ring-cyan-50/50'
-                        : 'bg-white border-slate-50 hover:border-cyan-100 hover:bg-cyan-50/10 text-slate-500'
-                    }`}
-                  >
-                    <div className={`p-3 rounded-2xl transition-all ${
-                      selectedResources.includes(res.id) ? 'bg-white/20 text-white' : 'bg-slate-50 text-[#235b73]'
-                    }`}>
-                      {res.icon}
-                    </div>
-                    <span className="text-[10px] font-black uppercase tracking-[0.15em]">{res.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Submit */}
-            <div className="pt-12 border-t border-slate-50 flex flex-col md:flex-row gap-6">
-              <button
-                type="button"
-                onClick={onClose}
-                className="flex-1 py-5 text-slate-300 font-black uppercase tracking-[0.4em] text-[10px] hover:text-[#235b73] hover:bg-slate-50 rounded-[2rem] transition-all"
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="flex-[2] btn-accent py-5 text-sm font-black uppercase tracking-[0.25em] shadow-xl shadow-[#00adef]/20 rounded-[2rem] hover:-translate-y-1 active:scale-95"
-              >
-                {isSubmitting ? (
-                  <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
-                ) : (
-                  <>
-                    <Send size={22} strokeWidth={2.5} /> Solicitar Reserva
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
-        </div>
+          <footer className="pt-8 border-t border-slate-50 bg-slate-50/30 flex gap-4 sticky bottom-0 z-10 backdrop-blur-sm">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 py-3 text-slate-400 font-bold uppercase tracking-widest text-[9px] hover:text-[#235b73] rounded-lg transition-all"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-[2] btn-accent py-3 shadow-lg shadow-[#00adef]/20 uppercase tracking-widest text-[10px] font-black"
+            >
+              {isSubmitting ? (
+                <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <>
+                  <Send size={18} strokeWidth={2.5} /> Solicitar Reserva
+                </>
+              )}
+            </button>
+          </footer>
+        </form>
       </div>
     </div>
   );

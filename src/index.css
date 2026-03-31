@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: 'Inter', 'Outfit', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --color-livigui-primary: #235b73;
   --color-livigui-accent: #00adef;
   --color-livigui-dark: #000000;
@@ -20,33 +20,39 @@
     @apply min-h-screen antialiased selection:bg-cyan-100 selection:text-cyan-900;
     margin: 0;
     display: block;
-    line-height: 1.6;
+    line-height: 1.5;
+  }
+
+  h1, h2, h3, h4 {
+    letter-spacing: -0.025em;
   }
 }
 
 @layer components {
+  /* High-end Cards & Depth */
   .card-premium {
-    @apply bg-white border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl overflow-hidden;
+    @apply bg-white border border-slate-100 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.04),0_4px_6px_-2px_rgba(0,0,0,0.02)] hover:shadow-[0_10px_40px_-10px_rgba(35,91,115,0.08)] transition-all duration-500 rounded-xl overflow-hidden;
   }
 
   .btn-primary {
-    @apply flex items-center justify-center gap-2 px-6 py-3 bg-[#235b73] hover:bg-[#1a4558] text-white font-bold rounded-xl transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-cyan-100;
+    @apply flex items-center justify-center gap-2 px-5 py-2.5 bg-[#235b73] hover:bg-[#1a4558] text-white font-semibold text-sm rounded-lg transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-cyan-100/50;
   }
 
   .btn-accent {
-    @apply flex items-center justify-center gap-2 px-6 py-3 bg-[#00adef] hover:bg-[#009bd6] text-white font-bold rounded-xl transition-all active:scale-[0.98] disabled:opacity-50 shadow-sm;
+    @apply flex items-center justify-center gap-2 px-5 py-2.5 bg-[#00adef] hover:bg-[#009bd6] text-white font-semibold text-sm rounded-lg transition-all active:scale-[0.98] disabled:opacity-50 shadow-sm;
   }
 
   .input-field {
-    @apply w-full px-4 py-2 bg-white border border-slate-200 rounded-xl focus:ring-4 focus:ring-cyan-500/10 focus:border-[#00adef] outline-none transition-all placeholder:text-slate-400 font-medium;
+    @apply w-full px-4 py-2 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#00adef]/20 focus:border-[#00adef] outline-none transition-all placeholder:text-slate-300 text-sm font-medium;
   }
 
+  /* Compact Navigation */
   .nav-link {
-    @apply px-4 py-2.5 rounded-xl font-bold transition-all duration-200 flex items-center gap-3 text-sm;
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-3 text-xs tracking-tight;
   }
 
   .nav-link-active {
-    @apply bg-cyan-50 text-[#235b73] shadow-sm ring-1 ring-cyan-100;
+    @apply bg-[#235b73] text-white shadow-lg shadow-[#235b73]/10;
   }
 
   .nav-link-inactive {
@@ -54,10 +60,10 @@
   }
 }
 
-/* Custom Scrollbar */
+/* Minimalist Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
@@ -65,37 +71,54 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #e2e8f0;
+  background-color: #235b73;
   border-radius: 9999px;
+  opacity: 0.1;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #cbd5e1;
+  background-color: #00adef;
 }
 
-/* FullCalendar Customizations */
+/* Custom Scrollbar for list containers */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(35, 91, 115, 0.2);
+}
+
+/* FullCalendar High-End Polishing */
 .fc {
   font-family: var(--font-sans) !important;
   border: none !important;
 }
 
 .fc-toolbar-title {
-  font-size: 1.1rem !important;
-  font-weight: 800 !important;
+  font-size: 1rem !important;
+  font-weight: 700 !important;
   color: #235b73 !important;
-  text-transform: capitalize;
+  letter-spacing: -0.01em;
 }
 
 .fc-button {
   background-color: #ffffff !important;
-  border-color: #f1f5f9 !important;
+  border: 1px solid #f1f5f9 !important;
   color: #64748b !important;
-  font-weight: 700 !important;
-  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  font-size: 0.7rem !important;
   text-transform: uppercase !important;
   letter-spacing: 0.05em !important;
-  padding: 0.5rem 1rem !important;
-  border-radius: 0.75rem !important;
+  padding: 0.4rem 0.8rem !important;
+  border-radius: 0.5rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.fc-button:hover {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+  color: #235b73 !important;
 }
 
 .fc-button-active {
@@ -105,22 +128,35 @@
 }
 
 .fc-col-header-cell {
-  background-color: #f8fafc !important;
-  padding: 0.75rem 0 !important;
-  color: #235b73 !important;
-  font-weight: 800 !important;
+  background-color: #fcfdfe !important;
+  padding: 0.5rem 0 !important;
+  color: #94a3b8 !important;
+  font-weight: 600 !important;
   text-transform: uppercase !important;
   font-size: 9px !important;
-  letter-spacing: 0.15em !important;
+  letter-spacing: 0.1em !important;
   border-color: #f1f5f9 !important;
 }
 
 .fc-timegrid-slot {
   border-color: #f8fafc !important;
+  font-size: 10px !important;
+  color: #94a3b8 !important;
 }
 
 .fc-event {
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1) !important;
-  border-radius: 0.5rem !important;
-  border: none !important;
+  box-shadow: 0 4px 12px -2px rgb(35 91 115 / 0.1) !important;
+  border-radius: 0.4rem !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  padding: 1px !important;
+}
+
+.fc-timegrid-now-indicator-line {
+  border-color: #00adef !important;
+  border-width: 2px 0 0 !important;
+}
+
+.fc-timegrid-now-indicator-arrow {
+  border-color: #00adef !important;
+  background-color: #00adef !important;
 }
