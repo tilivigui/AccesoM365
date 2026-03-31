@@ -50,10 +50,12 @@ export async function searchUsers(query: string) {
     const client = await getGraphClient();
     if (!client) throw new Error('Not authenticated');
 
-    // Aumentamos la flexibilidad de la búsqueda
+    // Microsoft Graph requires specific headers for complex filters.
+    // Simplifying to avoid issues with standard client configuration.
+    const escapedQuery = query.replace(/'/g, "''");
     const result = await client
       .api('/users')
-      .filter(`startswith(displayName,'${query}') or startswith(givenName,'${query}') or startswith(surname,'${query}') or startswith(mail,'${query}') or startswith(userPrincipalName,'${query}')`)
+      .filter(`startswith(displayName,'${escapedQuery}') or startswith(mail,'${escapedQuery}')`)
       .select('id,displayName,mail,userPrincipalName')
       .top(10)
       .get();

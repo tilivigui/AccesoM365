@@ -49,6 +49,9 @@ function App() {
   useEffect(() => {
     if (session?.user && (userRole === 'admin' || userRole === 'approver')) {
       fetchNotifications();
+      // Refetch every minute for real-time visibility for approvers
+      const interval = setInterval(fetchNotifications, 60000);
+      return () => clearInterval(interval);
     }
   }, [userRole, session]);
 
@@ -85,8 +88,14 @@ function App() {
       setUserRole(data.role);
       // Automatically switch to admin view if the logged-in user is the TI supervisor
       if (email === 'supervisorti@livigui.com') {
+        setUserRole('approver'); // Fail-safe: asegurar rol de aprobador
         setView('admin');
       }
+    } else if (email === 'supervisorti@livigui.com') {
+      // Si no hay perfil pero es el supervisor, forzar rol
+      console.log('App: Forzando rol de aprobador para el supervisor (sin perfil DB)');
+      setUserRole('approver');
+      setView('admin');
     }
   };
 

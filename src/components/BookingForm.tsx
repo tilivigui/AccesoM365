@@ -129,16 +129,18 @@ export const BookingForm: React.FC<BookingFormProps> = ({ startTime, endTime, ro
 
         alert('Reserva actualizada correctamente');
       } else {
-        const { data: newRequest, error } = await supabase.from('room_requests').insert({
+        const { data: createdRecords, error } = await supabase.from('room_requests').insert({
           ...payload,
           organizer_id: user.id,
           organizer_email: user.email,
           room_id: room.id,
           room_email: room.mail || room.id,
           status: 'pending'
-        }).select().single();
+        }).select();
 
         if (error) throw error;
+        const newRequest = createdRecords?.[0];
+        if (!newRequest) throw new Error('Error al crear la solicitud');
 
         // Notificar creación (Opcional, no bloquea el éxito si falla)
         try {

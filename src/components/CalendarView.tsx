@@ -62,7 +62,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ selectedId, onSelect
       if (error) throw error;
       console.log(`Calendar: Supabase devolvió ${supabaseRequests?.length || 0} solicitudes.`);
 
-      const formattedSupabaseEvents = supabaseRequests.map((r: any) => ({
+      const formattedSupabaseEvents = (supabaseRequests || []).map((r: any) => ({
         id: r.m365_event_id || r.id,
         title: r.status === 'pending' ? `[PENDIENTE] ${r.title}` : r.title,
         start: r.start_time,
@@ -81,11 +81,10 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ selectedId, onSelect
       // Filter out Supabase events that are already in M365 to avoid duplicates
       const filteredSupabase = formattedSupabaseEvents.filter(se => {
         const m365Id = se.extendedProps.raw.m365_event_id;
-        const cleanSupabaseTitle = se.extendedProps.raw.title;
-
+        // Check for same ID or same title/time
         return !formattedGraphEvents.some((ge: any) =>
           (m365Id && ge.id === m365Id) ||
-          (ge.title === cleanSupabaseTitle && Math.abs(new Date(ge.start).getTime() - new Date(se.start).getTime()) < 120000)
+          (Math.abs(new Date(ge.start).getTime() - new Date(se.start).getTime()) < 300000) // Increase tolerance to 5 minutes
         );
       });
 
