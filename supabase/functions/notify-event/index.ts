@@ -77,13 +77,26 @@ serve(async (req) => {
 
     const recipients = [
       { emailAddress: { address: requestData.organizer_email } },
-      { emailAddress: { address: 'supervisorti@livigui.com' } }, // Approver copy
-      ...requestData.participants.map(p => ({ emailAddress: { address: p.mail } }))
+      { emailAddress: { address: 'supervisorti@livigui.com' } }, // Copia al aprobador
+      ...(requestData.participants || [])
+          .filter((p: any) => p.mail || p.userPrincipalName) // Asegurar que tengan correo
+          .map((p: any) => ({ emailAddress: { address: p.mail || p.userPrincipalName } }))
     ];
 
-    // Filter unique recipients
-    const uniqueRecipients = Array.from(new Set(recipients.map(r => r.emailAddress.address)))
-      .map(email => ({ emailAddress: { address: email } }));
+    // Filtrar destinatarios únicos y válidos
+    const uniqueRecipients = Array.from(new Set(
+      recipients
+        .map(r => r.emailAddress.address?.toLowerCase())
+        .filter(email => email && email.includes('@'))
+    )).map(email => ({ emailAddress: { address: email } }));
+
+    if (uniqueRecipients.length === 0) {
+      console.warn('No hay destinatarios válidos para la notificación');
+      return new Response(
+        JSON.stringify({ message: 'No valid recipients' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      );
+    }
 
     const emailBody = {
       message: {

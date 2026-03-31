@@ -46,17 +46,26 @@ export async function getGraphClient(): Promise<Client | null> {
  * Search users in the M365 tenant
  */
 export async function searchUsers(query: string) {
-  const client = await getGraphClient();
-  if (!client) throw new Error('Not authenticated');
+  try {
+    const client = await getGraphClient();
+    if (!client) throw new Error('Not authenticated');
 
-  const result = await client
-    .api('/users')
-    .filter(`startswith(displayName,'${query}') or startswith(mail,'${query}')`)
-    .select('id,displayName,mail')
-    .top(10)
-    .get();
+    // Aumentamos la flexibilidad de la búsqueda
+    const result = await client
+      .api('/users')
+      .filter(`startswith(displayName,'${query}') or startswith(givenName,'${query}') or startswith(surname,'${query}') or startswith(mail,'${query}') or startswith(userPrincipalName,'${query}')`)
+      .select('id,displayName,mail,userPrincipalName')
+      .top(10)
+      .get();
 
-  return result.value;
+    return result.value.map((u: any) => ({
+      ...u,
+      mail: u.mail || u.userPrincipalName // Fallback si mail está vacío
+    }));
+  } catch (error) {
+    console.error('GraphService: Error en búsqueda de usuarios:', error);
+    return [];
+  }
 }
 
 /**
@@ -86,13 +95,17 @@ export async function getCalendarEvents(id: string, start: string, end: string) 
     throw new Error('Not authenticated');
   }
 
-  // Resolvemos el endpoint correcto. Para recursos (salas), /users/{email} es lo estándar.
+  // Resolvemos el endpoint correcto.
+  // Para salas de reuniones y usuarios, usamos /users/{id}/calendarView.
+  // El 'id' puede ser el User Principal Name (UPN) o el ID de objeto.
   let endpoint = `/users/${id}/calendarView`;
 
-  const { data: { user } } = await supabase.auth.getUser();
-  if (user?.email === id || id === 'me') {
+  const { data: { user: authUser } } = await supabase.auth.getUser();
+  if (authUser?.email === id || id === 'me') {
     endpoint = `/me/calendarView`;
   }
+
+  console.log(`GraphService: Consultando calendario en ${endpoint} para el rango ${start} - ${end}`);
 
   try {
     const result = await client

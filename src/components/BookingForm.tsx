@@ -108,20 +108,24 @@ export const BookingForm: React.FC<BookingFormProps> = ({ startTime, endTime, ro
           .eq('id', requestData.id);
         if (error) throw error;
 
-        // Notificar cambio
-        await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/notify-event`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${session?.access_token}`,
-            'x-provider-token': session?.provider_token,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            type: 'modified',
-            requestId: requestData.id,
-            requestData: { ...payload, organizer_email: user.email, room_id: room.displayName }
-          })
-        });
+        // Notificar cambio (Opcional, no bloquea el éxito si falla)
+        try {
+          await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/notify-event`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${session?.access_token}`,
+              'x-provider-token': session?.provider_token,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              type: 'modified',
+              requestId: requestData.id,
+              requestData: { ...payload, organizer_email: user.email, room_id: room.displayName }
+            })
+          });
+        } catch (notifErr) {
+          console.error('Error enviando notificación (continuando):', notifErr);
+        }
 
         alert('Reserva actualizada correctamente');
       } else {
@@ -136,20 +140,24 @@ export const BookingForm: React.FC<BookingFormProps> = ({ startTime, endTime, ro
 
         if (error) throw error;
 
-        // Notificar creación
-        await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/notify-event`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${session?.access_token}`,
-            'x-provider-token': session?.provider_token,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            type: 'created',
-            requestId: newRequest.id,
-            requestData: { ...payload, organizer_email: user.email, room_id: room.displayName }
-          })
-        });
+        // Notificar creación (Opcional, no bloquea el éxito si falla)
+        try {
+          await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/notify-event`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${session?.access_token}`,
+              'x-provider-token': session?.provider_token,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              type: 'created',
+              requestId: newRequest.id,
+              requestData: { ...payload, organizer_email: user.email, room_id: room.displayName }
+            })
+          });
+        } catch (notifErr) {
+          console.error('Error enviando notificación (continuando):', notifErr);
+        }
 
         alert('¡Solicitud de reserva enviada con éxito!');
       }

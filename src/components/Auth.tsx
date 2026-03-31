@@ -9,7 +9,7 @@ export const Auth: React.FC = () => {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'azure',
         options: {
-          scopes: 'User.Read User.Read.All Calendars.ReadWrite Calendars.ReadWrite.Shared Place.Read.All',
+          scopes: 'User.Read User.Read.All Calendars.ReadWrite Calendars.ReadWrite.Shared Place.Read.All Mail.Send',
           redirectTo: window.location.origin,
           queryParams: {
             prompt: 'select_account'
