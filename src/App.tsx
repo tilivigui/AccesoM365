@@ -5,7 +5,7 @@ import { RoomSelector } from './components/RoomSelector';
 import { CalendarView } from './components/CalendarView';
 import { BookingForm } from './components/BookingForm';
 import { ApproverDashboard } from './components/ApproverDashboard';
-import { LogOut, Calendar as CalendarIcon, ShieldCheck, LayoutGrid, Search, Bell, Settings, User } from 'lucide-react';
+import { LogOut, Calendar as CalendarIcon, ShieldCheck, LayoutGrid, Search, Bell, Settings, User, Clock } from 'lucide-react';
 
 function App() {
   const [session, setSession] = useState<any>(null);
@@ -15,6 +15,9 @@ function App() {
   const [view, setView] = useState<'user' | 'admin'>('user');
   const [selectedRoom, setSelectedRoom] = useState<any>(null);
   const [bookingTime, setBookingTime] = useState<{ start: Date; end: Date } | null>(null);
+  const [editingRequest, setEditingRequest] = useState<any>(null);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   useEffect(() => {
     console.log('App: Inicializando sesión...');
@@ -39,8 +42,24 @@ function App() {
       setLoading(false);
     });
 
+    if (session?.user && (userRole === 'admin' || userRole === 'approver')) {
+      fetchNotifications();
+    }
+
     return () => subscription.unsubscribe();
-  }, []);
+  }, [userRole, session]);
+
+  const fetchNotifications = async () => {
+    const { data, error } = await supabase
+      .from('room_requests')
+      .select('*')
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false });
+
+    if (!error && data) {
+      setNotifications(data);
+    }
+  };
 
   const fetchUserRole = async (userId: string, email?: string) => {
     const { data, error } = await supabase
@@ -152,11 +171,51 @@ function App() {
              </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button className="p-2 text-slate-300 hover:text-[#00adef] hover:bg-cyan-50 rounded-xl transition-all relative group">
+          <div className="flex items-center gap-2 relative">
+            <button
+              onClick={() => setShowNotifications(!showNotifications)}
+              className={`p-2 rounded-xl transition-all relative group ${showNotifications ? 'bg-cyan-50 text-[#00adef]' : 'text-slate-300 hover:text-[#00adef] hover:bg-cyan-50'}`}
+            >
               <Bell size={18} />
-              <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-[#00adef] rounded-full border border-white ring-1 ring-cyan-50"></span>
+              {notifications.length > 0 && (
+                <span className="absolute top-1.5 right-1.5 min-w-[14px] h-[14px] px-1 bg-[#00adef] text-white text-[8px] font-black rounded-full border-2 border-white flex items-center justify-center animate-bounce">
+                  {notifications.length}
+                </span>
+              )}
             </button>
+
+            {showNotifications && (
+              <div className="absolute top-full right-0 mt-3 w-80 bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 overflow-hidden animate-in slide-in-from-top-2 duration-200 ring-1 ring-black/5">
+                <header className="px-5 py-4 border-b border-slate-50 bg-slate-50/30 flex items-center justify-between">
+                  <span className="text-[10px] font-black text-[#235b73] uppercase tracking-widest">Notificaciones</span>
+                  <span className="px-2 py-0.5 bg-[#00adef] text-white text-[8px] font-black rounded-full uppercase">{notifications.length} Pendientes</span>
+                </header>
+                <div className="max-h-96 overflow-y-auto custom-scrollbar">
+                  {notifications.length > 0 ? notifications.map((notif) => (
+                    <button
+                      key={notif.id}
+                      onClick={() => {
+                        setEditingRequest(notif);
+                        setShowNotifications(false);
+                      }}
+                      className="w-full text-left p-4 hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0 group"
+                    >
+                      <p className="text-[11px] font-black text-[#235b73] group-hover:text-[#00adef] truncate mb-1">{notif.title}</p>
+                      <p className="text-[9px] text-slate-400 font-bold flex items-center gap-1.5">
+                        <Clock size={10} className="text-[#00adef]" />
+                        {new Date(notif.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {notif.organizer_email.split('@')[0]}
+                      </p>
+                    </button>
+                  )) : (
+                    <div className="p-10 text-center text-slate-300">
+                       <Bell size={24} className="mx-auto mb-3 opacity-20" />
+                       <p className="text-[10px] font-bold uppercase tracking-widest">Sin pendientes</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             <button className="p-2 text-slate-300 hover:text-[#235b73] hover:bg-slate-50 rounded-xl transition-all">
               <Settings size={18} />
             </button>
@@ -216,6 +275,7 @@ function App() {
                     <CalendarView
                       selectedId={selectedRoom.id}
                       onSelectTime={(start, end) => setBookingTime({ start, end })}
+                      onSelectEvent={(req) => setEditingRequest(req)}
                     />
                   </div>
                 </div>
@@ -235,14 +295,38 @@ function App() {
         </div>
       </main>
 
-      {/* Booking Modal Overlay */}
+      {/* Booking Modal Overlay (New) */}
       {bookingTime && selectedRoom && (
         <BookingForm
           startTime={bookingTime.start}
           endTime={bookingTime.end}
           room={selectedRoom}
+          userRole={userRole}
           onClose={() => setBookingTime(null)}
-          onSuccess={() => setBookingTime(null)}
+          onSuccess={() => {
+            setBookingTime(null);
+            if (userRole === 'admin' || userRole === 'approver') fetchNotifications();
+          }}
+        />
+      )}
+
+      {/* Booking Modal Overlay (Edit/Approve) */}
+      {editingRequest && (
+        <BookingForm
+          startTime={new Date(editingRequest.start_time)}
+          endTime={new Date(editingRequest.end_time)}
+          room={{
+            id: editingRequest.room_id,
+            displayName: editingRequest.room_id, // Fallback if name not in DB
+            mail: editingRequest.room_email
+          }}
+          requestData={editingRequest}
+          userRole={userRole}
+          onClose={() => setEditingRequest(null)}
+          onSuccess={() => {
+            setEditingRequest(null);
+            if (userRole === 'admin' || userRole === 'approver') fetchNotifications();
+          }}
         />
       )}
     </div>

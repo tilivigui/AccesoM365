@@ -10,9 +10,10 @@ import { supabase } from '../lib/supabase';
 interface CalendarViewProps {
   selectedId: string;
   onSelectTime: (start: Date, end: Date) => void;
+  onSelectEvent?: (request: any) => void;
 }
 
-export const CalendarView: React.FC<CalendarViewProps> = ({ selectedId, onSelectTime }) => {
+export const CalendarView: React.FC<CalendarViewProps> = ({ selectedId, onSelectTime, onSelectEvent }) => {
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const calendarRef = useRef<FullCalendar>(null);
@@ -32,7 +33,6 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ selectedId, onSelect
       console.log('Calendar: Iniciando sincronización de eventos...');
 
       // 1. Fetch from Microsoft Graph
-      // Utilizamos el ID seleccionado que viene del RoomSelector (puede ser email o id)
       let graphEvents = [];
       try {
         graphEvents = await getCalendarEvents(
@@ -42,7 +42,6 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ selectedId, onSelect
         );
       } catch (graphError: any) {
         console.error('Calendar: Error al obtener eventos de Microsoft Graph:', graphError);
-        // Si es un error de autenticación (token expirado o ausente), notificamos al usuario
         if (graphError.message?.includes('authenticated') || graphError.status === 401) {
           alert('Tu sesión de Microsoft ha expirado o no tiene permisos suficientes. Por favor, cierra sesión e inicia de nuevo.');
         }
@@ -63,20 +62,23 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ selectedId, onSelect
 
       const formattedSupabaseEvents = supabaseRequests.map((r: any) => ({
         id: r.id,
-        title: `[PENDING] ${r.title}`,
+        title: r.status === 'pending' ? `[PENDIENTE] ${r.title}` : r.title,
         start: r.start_time,
         end: r.end_time,
-        backgroundColor: r.status === 'approved' ? '#10b981' : '#f59e0b', // Emerald-500 : Amber-500
-        borderColor: r.status === 'approved' ? '#059669' : '#d97706',
+        backgroundColor: r.status === 'approved' ? '#10b981' : '#00adef',
+        borderColor: r.status === 'approved' ? '#059669' : '#009bd6',
         display: 'block',
         textColor: '#ffffff',
-        extendedProps: { source: 'supabase', status: r.status }
+        extendedProps: {
+          source: 'supabase',
+          status: r.status,
+          raw: r // Keep for editing
+        }
       }));
 
-      // Filter out Supabase events that are already in M365 (to avoid duplication if approved)
-      // Usamos una lógica de comparación de títulos (limpiando el prefijo [PENDING]) y tiempos
+      // Filter out Supabase events that are already in M365
       const filteredSupabase = formattedSupabaseEvents.filter(se => {
-        const cleanSupabaseTitle = se.title.replace(/^\[PENDING\]\s*/, '');
+        const cleanSupabaseTitle = se.extendedProps.raw.title;
         return !formattedGraphEvents.some((ge: any) =>
           ge.id === se.id ||
           (ge.title === cleanSupabaseTitle && Math.abs(new Date(ge.start).getTime() - new Date(se.start).getTime()) < 60000)
@@ -96,12 +98,20 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ selectedId, onSelect
     onSelectTime(selectionInfo.start, selectionInfo.end);
   };
 
+  const handleEventClick = (clickInfo: any) => {
+    if (clickInfo.event.extendedProps.source === 'supabase') {
+      if (onSelectEvent) {
+        onSelectEvent(clickInfo.event.extendedProps.raw);
+      }
+    }
+  };
+
   return (
-    <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 h-full">
+    <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 h-full relative">
       {loading && (
-        <div className="absolute top-2 right-2 flex items-center gap-2">
-          <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-xs text-gray-500 font-medium">Syncing...</span>
+        <div className="absolute top-2 right-2 flex items-center gap-2 z-10 bg-white/80 p-1 rounded-md">
+          <div className="w-3 h-3 border-2 border-[#235b73] border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Sincronizando</span>
         </div>
       )}
       <FullCalendar
@@ -122,6 +132,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ selectedId, onSelect
         locale={esLocale}
         selectable={true}
         select={handleSelect}
+        eventClick={handleEventClick}
         events={events}
         datesSet={(info) => fetchEvents(info)}
         height="auto"

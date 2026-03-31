@@ -12,6 +12,8 @@ interface BookingFormProps {
   room: { id: string; displayName: string; mail?: string };
   onClose: () => void;
   onSuccess: () => void;
+  requestData?: any; // Existing request for editing/approval
+  userRole?: string;
 }
 
 const RECURSOS = [
@@ -23,17 +25,26 @@ const RECURSOS = [
   { id: 'laptop', label: 'Laptop / PC', icon: Laptop },
 ];
 
-export const BookingForm: React.FC<BookingFormProps> = ({ startTime, endTime, room, onClose, onSuccess }) => {
-  const { register, handleSubmit } = useForm();
+export const BookingForm: React.FC<BookingFormProps> = ({ startTime, endTime, room, onClose, onSuccess, requestData, userRole }) => {
+  const isEditing = !!requestData;
+  const isApprover = userRole === 'admin' || userRole === 'approver';
+
+  const { register, handleSubmit } = useForm({
+    defaultValues: {
+      title: requestData?.title || ''
+    }
+  });
+
   const [participantSearch, setParticipantSearch] = useState('');
   const [participantResults, setParticipantResults] = useState<any[]>([]);
-  const [selectedParticipants, setSelectedParticipants] = useState<any[]>([]);
-  const [selectedResources, setSelectedResources] = useState<string[]>([]);
+  const [selectedParticipants, setSelectedParticipants] = useState<any[]>(requestData?.participants || []);
+  const [selectedResources, setSelectedResources] = useState<string[]>(requestData?.resources || []);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isActioning, setIsActioning] = useState<string | null>(null);
 
   const editor = useEditor({
     extensions: [StarterKit],
-    content: '<p>Objetivos y agenda de la reunión...</p>',
+    content: requestData?.description_html || '<p>Objetivos y agenda de la reunión...</p>',
     editorProps: {
       attributes: {
         class: 'prose prose-slate prose-sm focus:outline-none min-h-[100px] p-4 bg-slate-50/50 rounded-xl border border-slate-100 hover:border-[#00adef]/30 transition-all focus:ring-2 focus:ring-[#00adef]/5 focus:border-[#00adef] font-medium text-slate-700 text-xs',
@@ -76,37 +87,88 @@ export const BookingForm: React.FC<BookingFormProps> = ({ startTime, endTime, ro
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No autenticado');
 
-      // Verificamos si hay token de proveedor antes de permitir la solicitud
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.provider_token) {
-        throw new Error('Tu sesión de Microsoft ha expirado. Por favor, reconecta tu cuenta antes de reservar.');
-      }
-
-      const requestData = {
+      const payload = {
         title: data.title,
         description_html: editor?.getHTML() || '',
         start_time: startTime.toISOString(),
         end_time: endTime.toISOString(),
-        organizer_id: user.id,
-        organizer_email: user.email,
-        room_id: room.id,
-        room_email: room.mail || room.id,
         participants: selectedParticipants,
         resources: selectedResources,
-        status: 'pending'
       };
 
-      const { error } = await supabase.from('room_requests').insert(requestData);
-      if (error) throw error;
+      if (isEditing) {
+        const { error } = await supabase
+          .from('room_requests')
+          .update(payload)
+          .eq('id', requestData.id);
+        if (error) throw error;
+        alert('Reserva actualizada correctamente');
+      } else {
+        // Verificamos si hay token de proveedor antes de permitir la solicitud
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.provider_token) {
+          throw new Error('Tu sesión de Microsoft ha expirado. Por favor, reconecta tu cuenta antes de reservar.');
+        }
 
-      alert('¡Solicitud de reserva enviada con éxito!');
+        const { error } = await supabase.from('room_requests').insert({
+          ...payload,
+          organizer_id: user.id,
+          organizer_email: user.email,
+          room_id: room.id,
+          room_email: room.mail || room.id,
+          status: 'pending'
+        });
+        if (error) throw error;
+        alert('¡Solicitud de reserva enviada con éxito!');
+      }
+
       onSuccess();
       onClose();
     } catch (err: any) {
-      console.error('Error al enviar la reserva:', err);
-      alert('Error al enviar la solicitud: ' + err.message);
+      console.error('Error al procesar la reserva:', err);
+      alert('Error: ' + err.message);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleApprovalAction = async (status: 'approved' | 'rejected') => {
+    if (!requestData?.id) return;
+    setIsActioning(status);
+
+    try {
+      if (status === 'approved') {
+        const { data: { session } } = await supabase.auth.getSession();
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/handle-approval`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session?.access_token}`,
+            'x-provider-token': session?.provider_token || '',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ requestId: requestData.id })
+        });
+
+        if (!response.ok) {
+          const errData = await response.json();
+          throw new Error(errData.message || 'Error al procesar la aprobación');
+        }
+      } else {
+        const { error } = await supabase
+          .from('room_requests')
+          .update({ status: 'rejected' })
+          .eq('id', requestData.id);
+        if (error) throw error;
+      }
+
+      alert(`Reserva ${status === 'approved' ? 'aprobada' : 'rechazada'} con éxito`);
+      onSuccess();
+      onClose();
+    } catch (err: any) {
+      console.error('Error en acción de aprobación:', err);
+      alert('Error: ' + err.message);
+    } finally {
+      setIsActioning(null);
     }
   };
 
@@ -116,9 +178,13 @@ export const BookingForm: React.FC<BookingFormProps> = ({ startTime, endTime, ro
         <header className="px-8 py-6 border-b border-slate-50 flex items-center justify-between bg-white sticky top-0 z-10">
           <div>
             <div className="flex items-center gap-1.5 mb-1">
-              <span className="text-[9px] font-black text-[#00adef] uppercase tracking-[0.15em]">Configuración de Reserva</span>
+              <span className="text-[9px] font-black text-[#00adef] uppercase tracking-[0.15em]">
+                {isEditing ? 'Gestión de Solicitud' : 'Configuración de Reserva'}
+              </span>
             </div>
-            <h2 className="text-xl font-black text-[#235b73] tracking-tighter">Nueva Reunión</h2>
+            <h2 className="text-xl font-black text-[#235b73] tracking-tighter">
+              {isEditing ? 'Detalles de la Reunión' : 'Nueva Reunión'}
+            </h2>
           </div>
           <button
             onClick={onClose}
@@ -245,16 +311,37 @@ export const BookingForm: React.FC<BookingFormProps> = ({ startTime, endTime, ro
             >
               Cancelar
             </button>
+          {isApprover && isEditing && requestData.status === 'pending' && (
+            <>
+              <button
+                type="button"
+                disabled={!!isActioning}
+                onClick={() => handleApprovalAction('rejected')}
+                className="flex-1 py-3 text-red-500 font-bold uppercase tracking-widest text-[9px] hover:bg-red-50 rounded-lg transition-all border border-red-100"
+              >
+                {isActioning === 'rejected' ? '...' : 'Rechazar'}
+              </button>
+              <button
+                type="button"
+                disabled={!!isActioning}
+                onClick={() => handleApprovalAction('approved')}
+                className="flex-1 bg-[#235b73] text-white py-3 shadow-lg shadow-[#235b73]/10 uppercase tracking-widest text-[9px] font-black rounded-lg hover:bg-[#1a4558]"
+              >
+                {isActioning === 'approved' ? 'Aprobando...' : 'Aprobar'}
+              </button>
+            </>
+          )}
+
             <button
               type="submit"
-              disabled={isSubmitting}
+            disabled={isSubmitting || !!isActioning || (isEditing && requestData.status !== 'pending' && !isApprover)}
               className="flex-[2] btn-accent py-3 shadow-lg shadow-[#00adef]/20 uppercase tracking-widest text-[10px] font-black"
             >
               {isSubmitting ? (
                 <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
               ) : (
                 <>
-                  <Send size={18} strokeWidth={2.5} /> Solicitar Reserva
+                <Send size={18} strokeWidth={2.5} /> {isEditing ? 'Actualizar' : 'Solicitar Reserva'}
                 </>
               )}
             </button>
