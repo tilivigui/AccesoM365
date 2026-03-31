@@ -50,18 +50,20 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ selectedId, onSelect
       const formattedGraphEvents = graphEvents;
 
       // 2. Fetch Pending/Approved from Supabase
+      console.log(`Calendar: Consultando Supabase para rango: ${info.start.toISOString()} - ${info.end.toISOString()}`);
       const { data: supabaseRequests, error } = await supabase
         .from('room_requests')
         .select('*')
         .eq('room_id', selectedId)
         .or(`status.eq.pending,status.eq.approved`)
-        .gte('start_time', info.start.toISOString())
-        .lte('end_time', info.end.toISOString());
+        .gte('end_time', info.start.toISOString())
+        .lte('start_time', info.end.toISOString());
 
       if (error) throw error;
+      console.log(`Calendar: Supabase devolvió ${supabaseRequests?.length || 0} solicitudes.`);
 
       const formattedSupabaseEvents = supabaseRequests.map((r: any) => ({
-        id: r.id,
+        id: r.m365_event_id || r.id,
         title: r.status === 'pending' ? `[PENDIENTE] ${r.title}` : r.title,
         start: r.start_time,
         end: r.end_time,
@@ -76,12 +78,14 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ selectedId, onSelect
         }
       }));
 
-      // Filter out Supabase events that are already in M365
+      // Filter out Supabase events that are already in M365 to avoid duplicates
       const filteredSupabase = formattedSupabaseEvents.filter(se => {
+        const m365Id = se.extendedProps.raw.m365_event_id;
         const cleanSupabaseTitle = se.extendedProps.raw.title;
+
         return !formattedGraphEvents.some((ge: any) =>
-          ge.id === se.id ||
-          (ge.title === cleanSupabaseTitle && Math.abs(new Date(ge.start).getTime() - new Date(se.start).getTime()) < 60000)
+          (m365Id && ge.id === m365Id) ||
+          (ge.title === cleanSupabaseTitle && Math.abs(new Date(ge.start).getTime() - new Date(se.start).getTime()) < 120000)
         );
       });
 

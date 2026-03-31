@@ -45,17 +45,9 @@ create policy "Admins can view all profiles" on profiles
   );
 
 -- Room Requests:
--- Users can view their own requests
-create policy "Users can view their own requests" on room_requests
-  for select using (auth.uid() = organizer_id);
-
--- Approvers and Admins can view all pending and processed requests
-create policy "Approvers/Admins can view all requests" on room_requests
-  for select using (
-    exists (
-      select 1 from profiles where id = auth.uid() and role in ('admin', 'approver')
-    )
-  );
+-- Everyone can view all requests (to see availability/blocking)
+create policy "Everyone can view requests" on room_requests
+  for select using (true);
 
 -- Users can create requests
 create policy "Users can create requests" on room_requests

@@ -109,15 +109,32 @@ serve(async (req) => {
     const graphData = await graphResponse.json()
 
     // 4. Update Supabase status
-    const { error: updateError } = await supabaseClient
+    const { data: updatedRequest, error: updateError } = await supabaseClient
       .from('room_requests')
       .update({
         status: 'approved',
         m365_event_id: graphData.id
       })
       .eq('id', requestId)
+      .select()
+      .single()
 
     if (updateError) throw updateError
+
+    // 5. Trigger notification email
+    await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/notify-event`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${req.headers.get('Authorization')}`,
+        'x-provider-token': providerToken,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        type: 'approved',
+        requestId: requestId,
+        requestData: updatedRequest
+      })
+    });
 
     return new Response(
       JSON.stringify({ message: 'Request approved and event created', eventId: graphData.id }),

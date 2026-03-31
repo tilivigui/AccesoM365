@@ -96,29 +96,61 @@ export const BookingForm: React.FC<BookingFormProps> = ({ startTime, endTime, ro
         resources: selectedResources,
       };
 
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.provider_token) {
+        throw new Error('Tu sesión de Microsoft ha expirado. Por favor, reconecta tu cuenta.');
+      }
+
       if (isEditing) {
         const { error } = await supabase
           .from('room_requests')
           .update(payload)
           .eq('id', requestData.id);
         if (error) throw error;
+
+        // Notificar cambio
+        await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/notify-event`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session?.access_token}`,
+            'x-provider-token': session?.provider_token,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            type: 'modified',
+            requestId: requestData.id,
+            requestData: { ...payload, organizer_email: user.email, room_id: room.displayName }
+          })
+        });
+
         alert('Reserva actualizada correctamente');
       } else {
-        // Verificamos si hay token de proveedor antes de permitir la solicitud
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.provider_token) {
-          throw new Error('Tu sesión de Microsoft ha expirado. Por favor, reconecta tu cuenta antes de reservar.');
-        }
-
-        const { error } = await supabase.from('room_requests').insert({
+        const { data: newRequest, error } = await supabase.from('room_requests').insert({
           ...payload,
           organizer_id: user.id,
           organizer_email: user.email,
           room_id: room.id,
           room_email: room.mail || room.id,
           status: 'pending'
-        });
+        }).select().single();
+
         if (error) throw error;
+
+        // Notificar creación
+        await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/notify-event`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session?.access_token}`,
+            'x-provider-token': session?.provider_token,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            type: 'created',
+            requestId: newRequest.id,
+            requestData: { ...payload, organizer_email: user.email, room_id: room.displayName }
+          })
+        });
+
         alert('¡Solicitud de reserva enviada con éxito!');
       }
 
@@ -154,11 +186,30 @@ export const BookingForm: React.FC<BookingFormProps> = ({ startTime, endTime, ro
           throw new Error(errData.message || 'Error al procesar la aprobación');
         }
       } else {
-        const { error } = await supabase
+        const { data: updatedRequest, error } = await supabase
           .from('room_requests')
           .update({ status: 'rejected' })
-          .eq('id', requestData.id);
+          .eq('id', requestData.id)
+          .select()
+          .single();
+
         if (error) throw error;
+
+        // Notificar rechazo
+        const { data: { session } } = await supabase.auth.getSession();
+        await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/notify-event`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session?.access_token}`,
+            'x-provider-token': session?.provider_token || '',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            type: 'rejected',
+            requestId: requestData.id,
+            requestData: updatedRequest
+          })
+        });
       }
 
       alert(`Reserva ${status === 'approved' ? 'aprobada' : 'rechazada'} con éxito`);

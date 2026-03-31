@@ -42,21 +42,28 @@ function App() {
       setLoading(false);
     });
 
+    return () => subscription.unsubscribe();
+  }, [session]);
+
+  // Effect to fetch notifications when role is determined or changes
+  useEffect(() => {
     if (session?.user && (userRole === 'admin' || userRole === 'approver')) {
       fetchNotifications();
     }
-
-    return () => subscription.unsubscribe();
   }, [userRole, session]);
 
   const fetchNotifications = async () => {
+    console.log('App: Buscando solicitudes pendientes para notificaciones...');
     const { data, error } = await supabase
       .from('room_requests')
       .select('*')
       .eq('status', 'pending')
       .order('created_at', { ascending: false });
 
-    if (!error && data) {
+    if (error) {
+      console.error('App: Error al cargar notificaciones:', error);
+    } else if (data) {
+      console.log(`App: Se encontraron ${data.length} notificaciones.`);
       setNotifications(data);
     }
   };
@@ -68,10 +75,16 @@ function App() {
       .eq('id', userId)
       .single();
 
-    if (!error && data) {
+    if (error) {
+      console.error('App: Error al obtener rol:', error);
+      return;
+    }
+
+    if (data) {
+      console.log(`App: Rol de usuario detectado: ${data.role}`);
       setUserRole(data.role);
       // Automatically switch to admin view if the logged-in user is the TI supervisor
-      if (email === 'supervisorti@livigui.com' && data.role === 'approver') {
+      if (email === 'supervisorti@livigui.com') {
         setView('admin');
       }
     }
