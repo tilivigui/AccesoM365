@@ -76,6 +76,12 @@ export const BookingForm: React.FC<BookingFormProps> = ({ startTime, endTime, ro
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No autenticado');
 
+      // Verificamos si hay token de proveedor antes de permitir la solicitud
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.provider_token) {
+        throw new Error('Tu sesión de Microsoft ha expirado. Por favor, reconecta tu cuenta antes de reservar.');
+      }
+
       const requestData = {
         title: data.title,
         description_html: editor?.getHTML() || '',

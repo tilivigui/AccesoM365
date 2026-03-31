@@ -1,8 +1,9 @@
-import React, { useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
+import esLocale from '@fullcalendar/core/locales/es';
 import { getCalendarEvents } from '../services/graphService';
 import { supabase } from '../lib/supabase';
 
@@ -16,6 +17,15 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ selectedId, onSelect
   const [loading, setLoading] = useState(false);
   const calendarRef = useRef<FullCalendar>(null);
 
+  // Trigger re-fetch when selectedId changes
+  useEffect(() => {
+    const calendarApi = calendarRef.current?.getApi();
+    if (calendarApi) {
+      const view = calendarApi.view;
+      fetchEvents({ start: view.activeStart, end: view.activeEnd });
+    }
+  }, [selectedId]);
+
   const fetchEvents = async (info: { start: Date; end: Date }) => {
     setLoading(true);
     try {
@@ -23,21 +33,22 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ selectedId, onSelect
 
       // 1. Fetch from Microsoft Graph
       // Utilizamos el ID seleccionado que viene del RoomSelector (puede ser email o id)
-      const graphEvents = await getCalendarEvents(
-        selectedId,
-        info.start.toISOString(),
-        info.end.toISOString()
-      );
+      let graphEvents = [];
+      try {
+        graphEvents = await getCalendarEvents(
+          selectedId,
+          info.start.toISOString(),
+          info.end.toISOString()
+        );
+      } catch (graphError: any) {
+        console.error('Calendar: Error al obtener eventos de Microsoft Graph:', graphError);
+        // Si es un error de autenticación (token expirado o ausente), notificamos al usuario
+        if (graphError.message?.includes('authenticated') || graphError.status === 401) {
+          alert('Tu sesión de Microsoft ha expirado o no tiene permisos suficientes. Por favor, cierra sesión e inicia de nuevo.');
+        }
+      }
 
-      const formattedGraphEvents = graphEvents.map((e: any) => ({
-        id: e.id,
-        title: e.subject,
-        start: e.start.dateTime,
-        end: e.end.dateTime,
-        backgroundColor: '#0078d4', // Microsoft Blue
-        borderColor: '#005a9e',
-        extendedProps: { source: 'm365' }
-      }));
+      const formattedGraphEvents = graphEvents;
 
       // 2. Fetch Pending/Approved from Supabase
       const { data: supabaseRequests, error } = await supabase
@@ -57,14 +68,22 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ selectedId, onSelect
         end: r.end_time,
         backgroundColor: r.status === 'approved' ? '#10b981' : '#f59e0b', // Emerald-500 : Amber-500
         borderColor: r.status === 'approved' ? '#059669' : '#d97706',
+        display: 'block',
+        textColor: '#ffffff',
         extendedProps: { source: 'supabase', status: r.status }
       }));
 
       // Filter out Supabase events that are already in M365 (to avoid duplication if approved)
-      const filteredSupabase = formattedSupabaseEvents.filter(se =>
-        !formattedGraphEvents.some((ge: any) => ge.id === se.id || ge.title.includes(se.title))
-      );
+      // Usamos una lógica de comparación de títulos (limpiando el prefijo [PENDING]) y tiempos
+      const filteredSupabase = formattedSupabaseEvents.filter(se => {
+        const cleanSupabaseTitle = se.title.replace(/^\[PENDING\]\s*/, '');
+        return !formattedGraphEvents.some((ge: any) =>
+          ge.id === se.id ||
+          (ge.title === cleanSupabaseTitle && Math.abs(new Date(ge.start).getTime() - new Date(se.start).getTime()) < 60000)
+        );
+      });
 
+      console.log(`Calendar: Eventos M365: ${formattedGraphEvents.length}, Eventos Supabase (filt): ${filteredSupabase.length}`);
       setEvents([...formattedGraphEvents, ...filteredSupabase]);
     } catch (err) {
       console.error('Error fetching calendar events:', err);
@@ -94,6 +113,13 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ selectedId, onSelect
           center: 'title',
           right: 'dayGridMonth,timeGridWeek,timeGridDay'
         }}
+        buttonText={{
+          today: 'Hoy',
+          month: 'Mes',
+          week: 'Semana',
+          day: 'Día'
+        }}
+        locale={esLocale}
         selectable={true}
         select={handleSelect}
         events={events}

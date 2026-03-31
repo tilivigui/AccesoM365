@@ -5,8 +5,27 @@ import { supabase } from '../lib/supabase';
  * Get the Microsoft OAuth token from the Supabase session
  */
 export async function getGraphAccessToken(): Promise<string | null> {
-  const { data: { session } } = await supabase.auth.getSession();
-  return session?.provider_token || null;
+  const { data: { session }, error } = await supabase.auth.getSession();
+  if (error) {
+    console.error('GraphService: Error obteniendo sesión de Supabase:', error);
+    return null;
+  }
+
+  const token = session?.provider_token;
+
+  if (!token) {
+    console.warn('GraphService: [ALERTA] No se encontró provider_token en la sesión actual.');
+    console.log('GraphService: Detalles de sesión:', {
+      hasSession: !!session,
+      user: session?.user?.email,
+      expiresAt: session?.expires_at,
+      hasToken: !!token
+    });
+  } else {
+    console.log('GraphService: Token de Microsoft (M365) recuperado correctamente.');
+  }
+
+  return token || null;
 }
 
 /**
@@ -56,41 +75,63 @@ export async function listRooms() {
 }
 
 /**
- * Fetch calendar events for a specific user or room
+ * Fetch and format calendar events for a specific user or room
  */
 export async function getCalendarEvents(id: string, start: string, end: string) {
+  if (!id) return [];
+
   const client = await getGraphClient();
-  if (!client) throw new Error('Not authenticated');
+  if (!client) {
+    console.error('GraphService: Cliente no inicializado - Falta autenticación.');
+    throw new Error('Not authenticated');
+  }
 
-  console.log(`Buscando eventos para ID: ${id} en el rango: ${start} a ${end}`);
-
-  // En Microsoft Graph, tanto usuarios como buzones de sala se acceden usualmente vía /users/{id_o_email}
-  // Si el ID contiene un '@', es un email, de lo contrario usamos el ID directamente
+  // Resolvemos el endpoint correcto. Para recursos (salas), /users/{email} es lo estándar.
   let endpoint = `/users/${id}/calendarView`;
 
-  // Si por alguna razón el ID es el del usuario logueado, podemos usar /me/ para mayor fiabilidad
-  const me = await supabase.auth.getUser();
-  if (me.data.user?.email === id) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user?.email === id || id === 'me') {
     endpoint = `/me/calendarView`;
   }
 
   try {
     const result = await client
       .api(endpoint)
+      .header('Prefer', 'outlook.timezone="UTC"')
       .query({
         startDateTime: start,
         endDateTime: end,
       })
-      .select('id,subject,start,end,location,isAllDay')
+      .select('id,subject,start,end,location,isAllDay,showAs')
+      .top(100)
       .get();
 
-    console.log(`Eventos recuperados para ${id}:`, result.value.length);
-    return result.value;
+    return result.value.map((e: any) => ({
+      id: e.id,
+      title: e.subject || '(Sin Asunto)',
+      start: e.start.dateTime,
+      end: e.end.dateTime,
+      allDay: e.isAllDay,
+      backgroundColor: e.showAs === 'busy' ? '#235b73' : '#00adef',
+      borderColor: '#ffffff20',
+      textColor: '#ffffff',
+      extendedProps: {
+        source: 'm365',
+        location: e.location?.displayName,
+        showAs: e.showAs
+      }
+    }));
   } catch (error: any) {
-    console.error(`Error al recuperar calendario para ${id}:`, error);
+    console.error(`GraphService: Error en fetch de eventos para ${id}:`, {
+      endpoint,
+      message: error.message,
+      status: error.status
+    });
 
-    // Si falla con /users/, intentamos con /me/ si es el usuario actual,
-    // pero para salas el endpoint de /users/ es el correcto si tienen buzón.
+    if (error.status === 403 || error.status === 404) {
+      return [];
+    }
+
     throw error;
   }
 }

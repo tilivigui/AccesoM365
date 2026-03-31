@@ -10,6 +10,7 @@ import { LogOut, Calendar as CalendarIcon, ShieldCheck, LayoutGrid, Search, Bell
 function App() {
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [hasProviderToken, setHasProviderToken] = useState(true);
   const [userRole, setUserRole] = useState<string>('user');
   const [view, setView] = useState<'user' | 'admin'>('user');
   const [selectedRoom, setSelectedRoom] = useState<any>(null);
@@ -21,6 +22,7 @@ function App() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       console.log('App: Sesión inicial recuperada:', session ? 'Usuario autenticado' : 'Sin sesión');
       setSession(session);
+      setHasProviderToken(!!session?.provider_token);
       if (session?.user) {
         fetchUserRole(session.user.id);
       }
@@ -30,6 +32,7 @@ function App() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('App: Cambio en el estado de Auth:', event, session ? 'Usuario autenticado' : 'Sin sesión');
       setSession(session);
+      setHasProviderToken(!!session?.provider_token);
       if (session?.user) {
         fetchUserRole(session.user.id);
       }
@@ -157,7 +160,29 @@ function App() {
         </header>
 
         {/* Dynamic View Content */}
-        <div className="flex-1 p-10 overflow-y-auto">
+        <div className="flex-1 p-10 overflow-y-auto relative">
+          {!hasProviderToken && session && (
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-2xl px-6">
+              <div className="bg-amber-50 border-2 border-amber-200 p-6 rounded-[2rem] shadow-2xl flex items-center justify-between gap-6 animate-in slide-in-from-top-10 duration-700">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-amber-100 rounded-2xl text-amber-600">
+                    <ShieldCheck size={24} />
+                  </div>
+                  <div>
+                    <p className="text-amber-900 font-black text-sm uppercase tracking-tight">Sesión de Microsoft Incompleta</p>
+                    <p className="text-amber-700 text-xs font-bold mt-1">El calendario no se sincronizará. Por favor, reconecta tu cuenta.</p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="px-6 py-3 bg-amber-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-amber-700 transition-all shadow-lg shadow-amber-200"
+                >
+                  Reconectar
+                </button>
+              </div>
+            </div>
+          )}
+
           {view === 'admin' ? (
             <div className="max-w-6xl mx-auto pb-12 animate-in fade-in slide-in-from-bottom-6 duration-700">
               <ApproverDashboard />
