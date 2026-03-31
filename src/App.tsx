@@ -5,7 +5,7 @@ import { RoomSelector } from './components/RoomSelector';
 import { CalendarView } from './components/CalendarView';
 import { BookingForm } from './components/BookingForm';
 import { ApproverDashboard } from './components/ApproverDashboard';
-import { LogOut, Calendar as CalendarIcon, ShieldCheck, LayoutGrid, Search, Bell, Settings, User, Clock, RefreshCw } from 'lucide-react';
+import { LogOut, Calendar as CalendarIcon, ShieldCheck, LayoutGrid, Search, Bell, Settings, User, Clock, RefreshCw, Menu, X as CloseIcon } from 'lucide-react';
 
 function App() {
   const [session, setSession] = useState<any>(null);
@@ -18,6 +18,7 @@ function App() {
   const [editingRequest, setEditingRequest] = useState<any>(null);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     console.log('App: Inicializando sesión...');
@@ -132,22 +133,39 @@ function App() {
   }
 
   return (
-    <div className="flex h-screen bg-[#fcfdfe] overflow-hidden text-slate-900 font-sans text-sm">
+    <div className="flex h-screen bg-[#fcfdfe] overflow-hidden text-slate-900 font-sans text-sm relative">
+      {/* Mobile Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 animate-in fade-in duration-300"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar Navigation */}
-      <aside className="w-64 bg-white border-r border-slate-100 flex flex-col shrink-0">
-        <div className="p-6 mb-2">
+      <aside className={`
+        fixed lg:static inset-y-0 left-0 w-64 bg-white border-r border-slate-100 flex flex-col shrink-0 z-50 transition-transform duration-300 ease-in-out
+        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
+        <div className="p-6 mb-2 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
              <div className="p-2 bg-[#235b73] rounded-lg shadow-lg shadow-[#235b73]/10">
                <CalendarIcon className="text-[#00adef]" size={18} strokeWidth={2.5} />
              </div>
              <span className="text-lg font-black tracking-tighter text-[#235b73]">LIVIGUI <span className="text-[#00adef] opacity-60">SALAS</span></span>
           </div>
+          <button
+            onClick={() => setIsSidebarOpen(false)}
+            className="lg:hidden p-1.5 text-slate-400 hover:text-[#235b73] transition-colors"
+          >
+            <CloseIcon size={20} />
+          </button>
         </div>
 
         <nav className="flex-1 px-4 space-y-1 overflow-y-auto custom-scrollbar">
           <div className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] mb-4 mt-6 px-2">Espacio de Trabajo</div>
           <button
-            onClick={() => setView('user')}
+            onClick={() => { setView('user'); setIsSidebarOpen(false); }}
             className={`w-full nav-link ${view === 'user' ? 'nav-link-active' : 'nav-link-inactive'}`}
           >
             <LayoutGrid size={20} />
@@ -156,7 +174,7 @@ function App() {
 
           {(userRole === 'admin' || userRole === 'approver') && (
             <button
-              onClick={() => setView('admin')}
+              onClick={() => { setView('admin'); setIsSidebarOpen(false); }}
               className={`w-full nav-link ${view === 'admin' ? 'nav-link-active' : 'nav-link-inactive'}`}
             >
               <ShieldCheck size={20} />
@@ -165,10 +183,13 @@ function App() {
           )}
 
           <div className="pt-6 text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] mb-4 px-2">Selección de Vista</div>
-          <div className="px-1">
+          <div className="px-1 pb-10">
             <RoomSelector
               selectedId={selectedRoom?.id}
-              onSelect={(item) => setSelectedRoom(item)}
+              onSelect={(item) => {
+                setSelectedRoom(item);
+                setIsSidebarOpen(false);
+              }}
             />
           </div>
         </nav>
@@ -194,11 +215,18 @@ function App() {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0 bg-[#fcfdfe] relative">
+      <main className="flex-1 flex flex-col min-w-0 bg-[#fcfdfe] relative w-full">
         {/* Header Bar */}
-        <header className="h-16 bg-white/80 backdrop-blur-md border-b border-slate-50 px-8 flex items-center justify-between sticky top-0 z-20">
+        <header className="h-16 bg-white/80 backdrop-blur-md border-b border-slate-50 px-4 lg:px-8 flex items-center justify-between sticky top-0 z-20">
           <div className="flex items-center gap-4">
-             <div className="relative w-64 group">
+             <button
+               onClick={() => setIsSidebarOpen(true)}
+               className="lg:hidden p-2 text-slate-400 hover:text-[#235b73] hover:bg-slate-50 rounded-xl transition-all"
+             >
+               <Menu size={20} />
+             </button>
+
+             <div className="relative w-40 sm:w-64 group hidden sm:block">
                 <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#00adef] transition-colors" />
                 <input
                   type="text"
@@ -268,7 +296,7 @@ function App() {
         </header>
 
         {/* Dynamic View Content */}
-        <div className="flex-1 p-8 overflow-y-auto relative custom-scrollbar">
+        <div className="flex-1 p-4 lg:p-8 overflow-y-auto relative custom-scrollbar">
           {!hasProviderToken && session && (
             <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-2xl px-6">
               <div className="bg-amber-50 border-2 border-amber-200 p-6 rounded-[2rem] shadow-2xl flex items-center justify-between gap-6 animate-in slide-in-from-top-10 duration-700">
