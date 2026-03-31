@@ -4,16 +4,25 @@ import { LogIn, Calendar as CalendarIcon, ShieldCheck, Clock, Zap } from 'lucide
 
 export const Auth: React.FC = () => {
   const handleLogin = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'azure',
-      options: {
-        scopes: 'User.Read User.Read.All Calendars.ReadWrite Place.Read.All',
-      },
-    });
+    console.log('Iniciando proceso de login con Microsoft...');
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'azure',
+        options: {
+          scopes: 'User.Read User.Read.All Calendars.ReadWrite Place.Read.All',
+          redirectTo: window.location.origin
+        },
+      });
 
-    if (error) {
-      console.error('Error logging in with Microsoft:', error.message);
-      alert('Error de inicio de sesión: ' + error.message);
+      if (error) {
+        console.error('Error de Supabase Auth:', error.message);
+        alert('Error de inicio de sesión: ' + error.message);
+      } else {
+        console.log('Respuesta de Auth (redirigiendo...):', data);
+      }
+    } catch (err: any) {
+      console.error('Error inesperado durante el login:', err);
+      alert('Error inesperado: ' + err.message);
     }
   };
 
