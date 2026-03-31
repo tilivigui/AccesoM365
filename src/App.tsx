@@ -9,20 +9,31 @@ import { LogOut, Calendar as CalendarIcon, ShieldCheck, LayoutGrid, Search, Bell
 
 function App() {
   const [session, setSession] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState<string>('user');
   const [view, setView] = useState<'user' | 'admin'>('user');
   const [selectedRoom, setSelectedRoom] = useState<any>(null);
   const [bookingTime, setBookingTime] = useState<{ start: Date; end: Date } | null>(null);
 
   useEffect(() => {
+    console.log('App: Inicializando sesión...');
+
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('App: Sesión inicial recuperada:', session ? 'Usuario autenticado' : 'Sin sesión');
       setSession(session);
-      if (session?.user) fetchUserRole(session.user.id);
+      if (session?.user) {
+        fetchUserRole(session.user.id);
+      }
+      setLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('App: Cambio en el estado de Auth:', event, session ? 'Usuario autenticado' : 'Sin sesión');
       setSession(session);
-      if (session?.user) fetchUserRole(session.user.id);
+      if (session?.user) {
+        fetchUserRole(session.user.id);
+      }
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
@@ -41,6 +52,17 @@ function App() {
   };
 
   const handleLogout = () => supabase.auth.signOut();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#fcfdfe]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-[#00adef] border-t-transparent rounded-full animate-spin shadow-xl shadow-cyan-100"></div>
+          <p className="text-slate-300 font-black text-[10px] uppercase tracking-[0.5em]">Verificando Sesión...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!session) {
     return <Auth />;
