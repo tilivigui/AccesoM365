@@ -19,7 +19,10 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ selectedId, onSelect
   const fetchEvents = async (info: { start: Date; end: Date }) => {
     setLoading(true);
     try {
+      console.log('Calendar: Iniciando sincronización de eventos...');
+
       // 1. Fetch from Microsoft Graph
+      // Utilizamos el ID seleccionado que viene del RoomSelector (puede ser email o id)
       const graphEvents = await getCalendarEvents(
         selectedId,
         info.start.toISOString(),

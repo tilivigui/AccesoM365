@@ -62,16 +62,31 @@ export async function getCalendarEvents(id: string, start: string, end: string) 
   const client = await getGraphClient();
   if (!client) throw new Error('Not authenticated');
 
-  const result = await client
-    .api(`/users/${id}/calendarView`)
-    .query({
-      startDateTime: start,
-      endDateTime: end,
-    })
-    .select('id,subject,start,end,location,isAllDay')
-    .get();
+  console.log(`Buscando eventos para ID: ${id} en el rango: ${start} a ${end}`);
 
-  return result.value;
+  // En Microsoft Graph, tanto usuarios como buzones de sala se acceden usualmente vía /users/{id_o_email}
+  // Si el ID contiene un '@', es un email, de lo contrario usamos el ID directamente
+  const endpoint = `/users/${id}/calendarView`;
+
+  try {
+    const result = await client
+      .api(endpoint)
+      .query({
+        startDateTime: start,
+        endDateTime: end,
+      })
+      .select('id,subject,start,end,location,isAllDay')
+      .get();
+
+    console.log(`Eventos recuperados para ${id}:`, result.value.length);
+    return result.value;
+  } catch (error: any) {
+    console.error(`Error al recuperar calendario para ${id}:`, error);
+
+    // Si falla con /users/, intentamos con /me/ si es el usuario actual,
+    // pero para salas el endpoint de /users/ es el correcto si tienen buzón.
+    throw error;
+  }
 }
 
 /**
