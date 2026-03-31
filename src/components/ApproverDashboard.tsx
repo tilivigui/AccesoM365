@@ -104,11 +104,11 @@ export const ApproverDashboard: React.FC = () => {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-4">
                     <div className={`px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest flex items-center gap-2 border ${
-                      req.status === 'pending' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                      req.status === 'pending' ? 'bg-cyan-50 text-[#00adef] border-cyan-100' :
                       req.status === 'approved' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-red-50 text-red-500 border-red-100'
                     }`}>
                        <span className={`w-1.5 h-1.5 rounded-full ${
-                          req.status === 'pending' ? 'bg-amber-400 animate-pulse' :
+                          req.status === 'pending' ? 'bg-[#00adef] animate-pulse' :
                           req.status === 'approved' ? 'bg-emerald-500' : 'bg-red-500'
                        }`}></span>
                        {req.status === 'pending' ? 'Pendiente' : req.status === 'approved' ? 'Aprobado' : 'Rechazado'}

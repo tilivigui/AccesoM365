@@ -4,7 +4,7 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { supabase } from '../lib/supabase';
 import { searchUsers } from '../services/graphService';
-import { Users, User, Wifi, Tv, Mic, Volume2, Monitor, Laptop, X, Send, Clock, Hash, CheckCircle2 } from 'lucide-react';
+import { Users, Wifi, Tv, Mic, Volume2, Monitor, Laptop, X, Send, Clock, Hash, CheckCircle2, type LucideProps } from 'lucide-react';
 
 interface BookingFormProps {
   startTime: Date | null;
@@ -15,12 +15,12 @@ interface BookingFormProps {
 }
 
 const RECURSOS = [
-  { id: 'wifi', label: 'Conexión Wifi', icon: <Wifi size={20} /> },
-  { id: 'tv', label: 'Pantalla TV', icon: <Tv size={20} /> },
-  { id: 'mic', label: 'Micrófono', icon: <Mic size={20} /> },
-  { id: 'parlantes', label: 'Altavoces', icon: <Volume2 size={20} /> },
-  { id: 'proyector', label: 'Proyector', icon: <Monitor size={20} /> },
-  { id: 'laptop', label: 'Laptop / PC', icon: <Laptop size={20} /> },
+  { id: 'wifi', label: 'Conexión Wifi', icon: Wifi },
+  { id: 'tv', label: 'Pantalla TV', icon: Tv },
+  { id: 'mic', label: 'Micrófono', icon: Mic },
+  { id: 'parlantes', label: 'Altavoces', icon: Volume2 },
+  { id: 'proyector', label: 'Proyector', icon: Monitor },
+  { id: 'laptop', label: 'Laptop / PC', icon: Laptop },
 ];
 
 export const BookingForm: React.FC<BookingFormProps> = ({ startTime, endTime, room, onClose, onSuccess }) => {
@@ -214,23 +214,26 @@ export const BookingForm: React.FC<BookingFormProps> = ({ startTime, endTime, ro
           <div>
             <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Equipamiento</label>
             <div className="grid grid-cols-3 gap-2">
-              {RECURSOS.map(res => (
-                <button
-                  key={res.id}
-                  type="button"
-                  onClick={() => toggleResource(res.id)}
-                  className={`flex items-center gap-2.5 p-3 border rounded-xl transition-all text-left ${
-                    selectedResources.includes(res.id)
-                      ? 'bg-[#235b73] border-[#235b73] text-white shadow-lg shadow-[#235b73]/10'
-                      : 'bg-white border-slate-100 hover:border-slate-200 text-slate-500'
-                  }`}
-                >
-                  <div className={`${selectedResources.includes(res.id) ? 'text-[#00adef]' : 'text-slate-300'}`}>
-                    {React.cloneElement(res.icon as React.ReactElement, { size: 14 })}
-                  </div>
-                  <span className="text-[9px] font-bold uppercase tracking-tighter">{res.label}</span>
-                </button>
-              ))}
+              {RECURSOS.map(res => {
+                const Icon = res.icon as React.FC<LucideProps>;
+                return (
+                  <button
+                    key={res.id}
+                    type="button"
+                    onClick={() => toggleResource(res.id)}
+                    className={`flex items-center gap-2.5 p-3 border rounded-xl transition-all text-left ${
+                      selectedResources.includes(res.id)
+                        ? 'bg-[#235b73] border-[#235b73] text-white shadow-lg shadow-[#235b73]/10'
+                        : 'bg-white border-slate-100 hover:border-slate-200 text-slate-500'
+                    }`}
+                  >
+                    <div className={`${selectedResources.includes(res.id) ? 'text-[#00adef]' : 'text-slate-300'}`}>
+                      <Icon size={14} />
+                    </div>
+                    <span className="text-[9px] font-bold uppercase tracking-tighter">{res.label}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
