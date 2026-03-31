@@ -66,7 +66,13 @@ export async function getCalendarEvents(id: string, start: string, end: string) 
 
   // En Microsoft Graph, tanto usuarios como buzones de sala se acceden usualmente vía /users/{id_o_email}
   // Si el ID contiene un '@', es un email, de lo contrario usamos el ID directamente
-  const endpoint = `/users/${id}/calendarView`;
+  let endpoint = `/users/${id}/calendarView`;
+
+  // Si por alguna razón el ID es el del usuario logueado, podemos usar /me/ para mayor fiabilidad
+  const me = await supabase.auth.getUser();
+  if (me.data.user?.email === id) {
+    endpoint = `/me/calendarView`;
+  }
 
   try {
     const result = await client

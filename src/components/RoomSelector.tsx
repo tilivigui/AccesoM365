@@ -31,7 +31,8 @@ export const RoomSelector: React.FC<RoomSelectorProps> = ({ onSelect, selectedId
     try {
       const rooms = await listRooms();
       setResults(rooms.map((r: any) => ({
-        id: r.id || r.emailAddress,
+        // Use emailAddress as primary ID if available, as it is most reliable for the Graph /users/ endpoint
+        id: r.emailAddress || r.id,
         displayName: r.displayName,
         mail: r.emailAddress,
         type: 'room'
