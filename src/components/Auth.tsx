@@ -45,9 +45,9 @@ export const Auth: React.FC = () => {
 
           <div className="space-y-8">
             <h1 className="text-7xl font-black leading-[1] tracking-tight mb-8">
-              Soluciones <br />
-              <span className="text-[#00adef]">Rápidas</span> y <br />
-              Duraderas.
+              Optimiza tu <br />
+              <span className="text-[#00adef]">Tiempo</span> y <br />
+              Reserva tu Sala.
             </h1>
             <p className="text-xl text-cyan-50/80 max-w-md font-bold leading-relaxed">
               Gestione sus salas de reuniones con la eficiencia de Microsoft 365 y la potencia de LIVIGUI.
