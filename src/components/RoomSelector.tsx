@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, User, Building2 } from 'lucide-react';
+import { Search, User, Building2, CheckCircle2 } from 'lucide-react';
 import { listRooms, searchUsers } from '../services/graphService';
 
 interface SelectionItem {
@@ -65,53 +65,78 @@ export const RoomSelector: React.FC<RoomSelectorProps> = ({ onSelect, selectedId
   };
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-      <div className="flex gap-2 mb-4">
+    <div className="space-y-4">
+      <div className="flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200 shadow-inner">
         <button
           onClick={() => setViewType('rooms')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2 rounded ${
-            viewType === 'rooms' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
+          className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition-all ${
+            viewType === 'rooms' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
           }`}
         >
-          <Building2 size={18} /> Rooms
+          <Building2 size={14} /> Rooms
         </button>
         <button
           onClick={() => setViewType('users')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2 rounded ${
-            viewType === 'users' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
+          className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition-all ${
+            viewType === 'users' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
           }`}
         >
-          <User size={18} /> Users
+          <User size={14} /> Users
         </button>
       </div>
 
-      <div className="relative mb-4">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
         <input
           type="text"
           value={query}
           onChange={handleSearch}
-          placeholder={viewType === 'rooms' ? 'Search rooms...' : 'Search users...'}
-          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+          placeholder={viewType === 'rooms' ? 'Quick search...' : 'Search by name...'}
+          className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-xs font-semibold placeholder:text-slate-400 transition-all"
         />
       </div>
 
-      <div className="max-h-60 overflow-y-auto space-y-2">
-        {loading && <p className="text-center text-gray-500 py-2">Loading...</p>}
-        {results.map((item) => (
+      <div className="max-h-[320px] overflow-y-auto space-y-1.5 custom-scrollbar pr-1">
+        {loading && (
+          <div className="flex flex-col items-center justify-center py-8 opacity-40">
+             <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        )}
+
+        {!loading && results.map((item) => (
           <button
             key={item.id}
             onClick={() => onSelect(item)}
-            className={`w-full text-left p-3 rounded-md transition-colors ${
-              selectedId === item.id ? 'bg-blue-50 border-blue-300 border' : 'hover:bg-gray-50 border-transparent border'
+            className={`w-full text-left p-3 rounded-xl transition-all group flex items-center gap-3 border ${
+              selectedId === item.id
+              ? 'bg-blue-600 border-blue-500 shadow-lg shadow-blue-200'
+              : 'bg-white border-slate-100 hover:border-slate-200 hover:bg-slate-50'
             }`}
           >
-            <p className="font-medium text-gray-800">{item.displayName}</p>
-            {item.mail && <p className="text-sm text-gray-500">{item.mail}</p>}
+            <div className={`p-2 rounded-lg transition-all ${
+              selectedId === item.id ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-400 group-hover:text-blue-600 group-hover:bg-blue-50'
+            }`}>
+              {item.type === 'room' ? <Building2 size={16} /> : <User size={16} />}
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <p className={`text-xs font-black truncate ${selectedId === item.id ? 'text-white' : 'text-slate-700'}`}>
+                {item.displayName}
+              </p>
+              {item.mail && (
+                <p className={`text-[10px] font-medium truncate ${selectedId === item.id ? 'text-blue-100' : 'text-slate-400'}`}>
+                  {item.mail}
+                </p>
+              )}
+            </div>
+            {selectedId === item.id && <CheckCircle2 size={14} className="text-white shrink-0" />}
           </button>
         ))}
+
         {!loading && results.length === 0 && (
-          <p className="text-center text-gray-500 py-2">No results found</p>
+          <div className="text-center py-10 opacity-30">
+            <Search size={24} className="mx-auto mb-2" />
+            <p className="text-[10px] font-black uppercase tracking-widest">No entries found</p>
+          </div>
         )}
       </div>
     </div>
