@@ -45,21 +45,26 @@ create policy "Admins can view all profiles" on profiles
   );
 
 -- Room Requests:
--- Consolidated Select Policy
--- 1. Users can view their own requests
+-- Split into separate policies for clarity and reliability
+-- 1. Users can always view their own requests
+create policy "room_requests_select_own" on room_requests
+  for select using (auth.uid() = organizer_id);
+
 -- 2. Admins/Approvers can view all requests
--- 3. Dedicated supervisor email can view all requests
--- 4. Calendar synchronization: we allow partial view if needed, but per user request we restrict.
--- NOTE: To avoid collisions, users SHOULD see pending slots. However, we follow user instruction.
-create policy "Unified select policy for room_requests" on room_requests
+create policy "room_requests_select_managers" on room_requests
   for select using (
-    auth.uid() = organizer_id
-    OR
     exists (
-      select 1 from public.profiles where profiles.id = auth.uid() and profiles.role in ('admin', 'approver')
+      select 1 from public.profiles
+      where id = auth.uid()
+      and role in ('admin', 'approver')
     )
-    OR
-    (auth.jwt() ->> 'email' = 'supervisorti@livigui.com')
+  );
+
+-- 3. Dedicated supervisor email fallback (bypass profile latency)
+create policy "room_requests_select_supervisor" on room_requests
+  for select using (
+    (auth.jwt() ->> 'email' = 'supervisorti@livigui.com') OR
+    (lower(auth.jwt() -> 'user_metadata' ->> 'email') = 'supervisorti@livigui.com')
   );
 
 -- Users can create requests

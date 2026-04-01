@@ -39,8 +39,17 @@ export const RequestsManagement: React.FC<RequestsManagementProps> = ({ onEdit }
   const fetchRequests = async () => {
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      console.log('RequestsMgmt: Usuario actual:', user?.email);
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
+
+      console.log('RequestsMgmt: DIAGNÓSTICO DE SESIÓN:', {
+        email: user?.email,
+        jwt_email: session?.access_token ? JSON.parse(atob(session.access_token.split('.')[1])).email : 'no-jwt',
+        user_metadata_email: user?.user_metadata?.email,
+        role: user?.role,
+        id: user?.id
+      });
+
       console.log('RequestsMgmt: Iniciando carga de todas las solicitudes...');
 
       const { data, error } = await supabase
