@@ -55,6 +55,8 @@ export async function searchUsers(query: string) {
     const escapedQuery = query.replace(/'/g, "''");
     const result = await client
       .api('/users')
+      .header('ConsistencyLevel', 'eventual')
+      .query({ '$count': 'true' })
       .filter(`startswith(displayName,'${escapedQuery}') or startswith(mail,'${escapedQuery}')`)
       .select('id,displayName,mail,userPrincipalName')
       .top(10)
