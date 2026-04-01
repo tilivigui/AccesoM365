@@ -45,21 +45,22 @@ create policy "Admins can view all profiles" on profiles
   );
 
 -- Room Requests:
--- Everyone can view all requests (to see availability/blocking)
-create policy "Everyone can view requests" on room_requests
-  for select using (true);
-
--- Admins/Approvers can view all details including private fields
-create policy "Admins/Approvers can view all requests" on room_requests
+-- Consolidated Select Policy
+-- 1. Users can view their own requests
+-- 2. Admins/Approvers can view all requests
+-- 3. Dedicated supervisor email can view all requests
+-- 4. Calendar synchronization: we allow partial view if needed, but per user request we restrict.
+-- NOTE: To avoid collisions, users SHOULD see pending slots. However, we follow user instruction.
+create policy "Unified select policy for room_requests" on room_requests
   for select using (
+    auth.uid() = organizer_id
+    OR
     exists (
-      select 1 from profiles where id = auth.uid() and role in ('admin', 'approver')
+      select 1 from public.profiles where profiles.id = auth.uid() and profiles.role in ('admin', 'approver')
     )
+    OR
+    (auth.jwt() ->> 'email' = 'supervisorti@livigui.com')
   );
-
--- Robust backup policy for the supervisor email
-create policy "Supervisor email backup view" on room_requests
-  for select using (auth.jwt() ->> 'email' = 'supervisorti@livigui.com');
 
 -- Users can create requests
 create policy "Users can create requests" on room_requests
@@ -103,3 +104,9 @@ $$ language plpgsql security definer;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
+
+-- FIX: Ensure supervisor has approver role if they already signed up
+-- This is a one-time repair block
+update public.profiles
+set role = 'approver'
+where email = 'supervisorti@livigui.com';

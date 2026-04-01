@@ -39,14 +39,21 @@ export const RequestsManagement: React.FC<RequestsManagementProps> = ({ onEdit }
   const fetchRequests = async () => {
     setLoading(true);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      console.log('RequestsMgmt: Usuario actual:', user?.email);
       console.log('RequestsMgmt: Iniciando carga de todas las solicitudes...');
+
       const { data, error } = await supabase
         .from('room_requests')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      console.log(`RequestsMgmt: Carga finalizada. Registros encontrados: ${data?.length || 0}`);
+      if (error) {
+        console.error('RequestsMgmt: Error en SELECT:', error);
+        throw error;
+      }
+
+      console.log(`RequestsMgmt: Registros totales en respuesta: ${data?.length || 0}`);
       if (data) console.table(data.map(d => ({ title: d.title, organizer: d.organizer_email, status: d.status })));
       setRequests(data || []);
     } catch (err) {
