@@ -23,7 +23,7 @@ create table public.room_requests (
   room_email text not null,
   participants jsonb default '[]', -- List of participant emails/names
   resources jsonb default '{}', -- Checklist of extras: {wifi: bool, tv: bool, etc}
-  status text check (status in ('pending', 'approved', 'rejected')) default 'pending',
+  status text check (status in ('pending', 'approved', 'rejected', 'suspended')) default 'pending',
   m365_event_id text, -- ID of the event in M365 after approval
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now()
@@ -56,6 +56,14 @@ create policy "Users can create requests" on room_requests
 -- Only Approvers/Admins can update status
 create policy "Approvers/Admins can update status" on room_requests
   for update using (
+    exists (
+      select 1 from profiles where id = auth.uid() and role in ('admin', 'approver')
+    )
+  );
+
+-- Only Approvers/Admins can delete requests
+create policy "Approvers/Admins can delete requests" on room_requests
+  for delete using (
     exists (
       select 1 from profiles where id = auth.uid() and role in ('admin', 'approver')
     )

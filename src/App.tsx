@@ -5,14 +5,15 @@ import { RoomSelector } from './components/RoomSelector';
 import { CalendarView } from './components/CalendarView';
 import { BookingForm } from './components/BookingForm';
 import { ApproverDashboard } from './components/ApproverDashboard';
-import { LogOut, Calendar as CalendarIcon, ShieldCheck, LayoutGrid, Search, Bell, Settings, User, Clock, RefreshCw, Menu, X as CloseIcon } from 'lucide-react';
+import { RequestsManagement } from './components/RequestsManagement';
+import { LogOut, Calendar as CalendarIcon, ShieldCheck, LayoutGrid, Search, Bell, Settings, User, Clock, RefreshCw, Menu, X as CloseIcon, ListTodo } from 'lucide-react';
 
 function App() {
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [hasProviderToken, setHasProviderToken] = useState(true);
   const [userRole, setUserRole] = useState<string>('user');
-  const [view, setView] = useState<'user' | 'admin'>('user');
+  const [view, setView] = useState<'user' | 'admin' | 'requests'>('user');
   const [selectedRoom, setSelectedRoom] = useState<any>(null);
   const [bookingTime, setBookingTime] = useState<{ start: Date; end: Date } | null>(null);
   const [editingRequest, setEditingRequest] = useState<any>(null);
@@ -178,7 +179,17 @@ function App() {
               className={`w-full nav-link ${view === 'admin' ? 'nav-link-active' : 'nav-link-inactive'}`}
             >
               <ShieldCheck size={20} />
-              <span>Administración</span>
+              <span>Aprobaciones</span>
+            </button>
+          )}
+
+          {session.user.email === 'supervisorti@livigui.com' && (
+            <button
+              onClick={() => { setView('requests'); setIsSidebarOpen(false); }}
+              className={`w-full nav-link ${view === 'requests' ? 'nav-link-active' : 'nav-link-inactive'}`}
+            >
+              <ListTodo size={20} />
+              <span>Solicitudes</span>
             </button>
           )}
 
@@ -322,6 +333,10 @@ function App() {
           {view === 'admin' ? (
             <div className="max-w-5xl mx-auto pb-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <ApproverDashboard />
+            </div>
+          ) : view === 'requests' ? (
+            <div className="max-w-6xl mx-auto pb-10">
+              <RequestsManagement onEdit={(req) => setEditingRequest(req)} />
             </div>
           ) : (
             <div className="h-full flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500">
