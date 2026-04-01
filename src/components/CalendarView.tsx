@@ -140,7 +140,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ selectedId, onSelect
         eventClick={handleEventClick}
         events={events}
         datesSet={(info) => fetchEvents(info)}
-        height="auto"
+        height="700px"
         allDaySlot={false}
         nowIndicator={true}
         slotMinTime="08:00:00"
