@@ -49,6 +49,18 @@ create policy "Admins can view all profiles" on profiles
 create policy "Everyone can view requests" on room_requests
   for select using (true);
 
+-- Admins/Approvers can view all details including private fields
+create policy "Admins/Approvers can view all requests" on room_requests
+  for select using (
+    exists (
+      select 1 from profiles where id = auth.uid() and role in ('admin', 'approver')
+    )
+  );
+
+-- Robust backup policy for the supervisor email
+create policy "Supervisor email backup view" on room_requests
+  for select using (auth.jwt() ->> 'email' = 'supervisorti@livigui.com');
+
 -- Users can create requests
 create policy "Users can create requests" on room_requests
   for insert with check (auth.uid() = organizer_id);

@@ -32,6 +32,7 @@ export const ApproverDashboard: React.FC = () => {
   const fetchRequests = async () => {
     setLoading(true);
     try {
+      console.log(`Dashboard: Cargando solicitudes con filtro: ${filter}`);
       let query = supabase
         .from('room_requests')
         .select('*');
@@ -43,6 +44,7 @@ export const ApproverDashboard: React.FC = () => {
       const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) throw error;
+      console.log(`Dashboard: Se recibieron ${data?.length || 0} solicitudes.`);
       setRequests(data || []);
     } catch (err) {
       console.error('Error fetching requests:', err);

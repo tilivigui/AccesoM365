@@ -20,7 +20,7 @@ export const RequestsManagement: React.FC<RequestsManagementProps> = ({ onEdit }
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('all');
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
 
   useEffect(() => {
@@ -39,15 +39,18 @@ export const RequestsManagement: React.FC<RequestsManagementProps> = ({ onEdit }
   const fetchRequests = async () => {
     setLoading(true);
     try {
+      console.log('RequestsMgmt: Iniciando carga de todas las solicitudes...');
       const { data, error } = await supabase
         .from('room_requests')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      console.log(`RequestsMgmt: Carga finalizada. Registros encontrados: ${data?.length || 0}`);
+      if (data) console.table(data.map(d => ({ title: d.title, organizer: d.organizer_email, status: d.status })));
       setRequests(data || []);
     } catch (err) {
-      console.error('Error:', err);
+      console.error('Error al cargar solicitudes:', err);
     } finally {
       setLoading(false);
     }
@@ -126,6 +129,20 @@ export const RequestsManagement: React.FC<RequestsManagementProps> = ({ onEdit }
           <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Total: {requests.length} registros</p>
         </div>
         <div className="flex gap-2">
+          <div className="flex bg-slate-50 p-1 rounded-xl border border-slate-100 shadow-inner mr-2">
+            {['all', 'pending', 'approved', 'rejected', 'suspended'].map((s) => (
+              <button
+                key={s}
+                onClick={() => setFilterStatus(s)}
+                className={`px-3 py-1 text-[8px] font-black uppercase tracking-widest rounded-lg transition-all ${
+                  filterStatus === s ? 'bg-white text-[#235b73] shadow-sm border border-slate-100' : 'text-slate-400 hover:text-[#235b73]'
+                }`}
+              >
+                {s === 'all' ? 'Ver Todo' : s}
+              </button>
+            ))}
+          </div>
+
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" size={14} />
             <input
