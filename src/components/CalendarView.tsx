@@ -18,18 +18,53 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ selectedId, onSelect
   const [loading, setLoading] = useState(false);
   const calendarRef = useRef<FullCalendar>(null);
 
-  // Trigger re-fetch when selectedId changes
+  // Trigger re-fetch when selectedId changes or on events
   useEffect(() => {
-    const calendarApi = calendarRef.current?.getApi();
-    if (calendarApi) {
-      const view = calendarApi.view;
-      fetchEvents({ start: view.activeStart, end: view.activeEnd });
-    }
+    const refresh = () => {
+      const calendarApi = calendarRef.current?.getApi();
+      if (calendarApi) {
+        const view = calendarApi.view;
+        fetchEvents({ start: view.activeStart, end: view.activeEnd });
+      }
+    };
+
+    refresh();
+
+    // 1. Polling every 2 minutes
+    const interval = setInterval(refresh, 120000);
+
+    // 2. Realtime subscription
+    const channel = supabase
+      .channel('calendar_realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'room_requests' }, () => {
+        console.log('Calendar: Cambio detectado en DB, refrescando...');
+        refresh();
+      })
+      .subscribe();
+
+    // 3. Window Focus
+    window.addEventListener('focus', refresh);
+
+    return () => {
+      clearInterval(interval);
+      supabase.removeChannel(channel);
+      window.removeEventListener('focus', refresh);
+    };
   }, [selectedId]);
 
   const fetchEvents = async (info: { start: Date; end: Date }) => {
+    // Evitar fetch si el rango es inválido
+    if (!info.start || !info.end) return;
+
     setLoading(true);
     try {
+      // 0. Verificar sesión antes de proceder
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        console.warn('Calendar: No hay sesión activa, abortando fetch.');
+        return;
+      }
+
       console.log('Calendar: Iniciando sincronización de eventos...');
 
       // 1. Fetch from Microsoft Graph

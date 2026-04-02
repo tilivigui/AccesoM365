@@ -115,6 +115,7 @@ export async function getCalendarEvents(id: string, start: string, end: string) 
     const result = await client
       .api(endpoint)
       .header('Prefer', 'outlook.timezone="UTC"')
+      .header('Cache-Control', 'no-cache')
       .query({
         startDateTime: start,
         endDateTime: end,
