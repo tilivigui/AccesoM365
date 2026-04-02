@@ -64,7 +64,8 @@ create policy "room_requests_select_managers" on room_requests
 create policy "room_requests_select_supervisor" on room_requests
   for select using (
     (auth.jwt() ->> 'email' = 'supervisorti@livigui.com') OR
-    (lower(auth.jwt() -> 'user_metadata' ->> 'email') = 'supervisorti@livigui.com')
+    (lower(auth.jwt() -> 'user_metadata' ->> 'email') = 'supervisorti@livigui.com') OR
+    (lower(auth.jwt() ->> 'preferred_username') = 'supervisorti@livigui.com')
   );
 
 -- Users can create requests

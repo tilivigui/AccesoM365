@@ -62,6 +62,7 @@ export const RequestsManagement: React.FC<RequestsManagementProps> = ({ onEdit }
         throw error;
       }
 
+      console.log('RequestsMgmt: DATOS RECUPERADOS:', data);
       console.log(`RequestsMgmt: Registros totales en respuesta: ${data?.length || 0}`);
       if (data) console.table(data.map(d => ({ title: d.title, organizer: d.organizer_email, status: d.status })));
       setRequests(data || []);
@@ -142,7 +143,7 @@ export const RequestsManagement: React.FC<RequestsManagementProps> = ({ onEdit }
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-black text-[#235b73] tracking-tighter">Gestión de Solicitudes</h2>
-          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Total: {requests.length} registros</p>
+          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Total: {filteredRequests.length} registros</p>
         </div>
         <div className="flex gap-2">
           <div className="flex bg-slate-50 p-1 rounded-xl border border-slate-100 shadow-inner mr-2">
